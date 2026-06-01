@@ -172,6 +172,12 @@ class AiService
 
     private function callGoogle(string $apiKey, string $model, string $system, string $message): string
     {
+        // Normalize model name: lowercase, strip "models/" prefix if present
+        $model = strtolower(trim($model));
+        $model = str_replace('models/', '', $model);
+        // Replace spaces with dashes
+        $model = str_replace(' ', '-', $model);
+
         $endpoint = str_replace('{model}', $model, $this->providerEndpoints['google']);
         $endpoint .= "?key={$apiKey}";
 
