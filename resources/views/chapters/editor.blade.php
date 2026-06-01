@@ -137,9 +137,9 @@
         <div class="nwp-card">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                 <h3 class="nwp-heading" style="font-size:var(--font-size-base); margin:0;">🎭 Characters</h3>
-                <button onclick="AutoExtractModule.run()" id="btn-auto-extract" class="nwp-btn nwp-btn--sm nwp-btn--primary" style="background:var(--color-accent); font-size:10px; padding:2px 6px;" title="Auto-detect new characters in this chapter">✨ Auto-Detect</button>
+                <button onclick="AutoExtractModule.run()" id="btn-auto-extract" class="nwp-btn nwp-btn--sm nwp-btn--primary" style="background:var(--color-accent); font-size:10px; padding:4px 8px; height:auto; min-height:0;" title="Auto-detect new characters in this chapter">✨ Auto-Detect</button>
             </div>
-            <div style="max-height:250px; overflow-y:auto; font-size:var(--font-size-sm); padding-right:4px;">
+            <div style="font-size:var(--font-size-sm);">
                 @if($charactersInChapter->isEmpty() && $otherCharacters->isEmpty())
                     <span class="nwp-text-muted">No characters.</span> 
                 @endif
@@ -169,7 +169,7 @@
         </div>
         <div class="nwp-card">
             <h3 class="nwp-heading" style="font-size:var(--font-size-base); margin-bottom:12px;">🗺️ Plot Outline</h3>
-            <div style="max-height:300px; overflow-y:auto; font-size:var(--font-size-sm); padding-right:4px;">
+            <div style="font-size:var(--font-size-sm);">
                 @if($plotPoints->isEmpty()) <span class="nwp-text-muted">No plot points.</span> @endif
                 @foreach($plotPoints as $plot)
                     <div style="margin-bottom:12px; border-left:3px solid {{ $plot->color_label ?: 'var(--color-accent)' }}; padding-left:8px;">

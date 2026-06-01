@@ -581,7 +581,8 @@ PROMPT;
         $systemPrompt = $this->buildSystemPrompt($user, $book, false);
         $systemPrompt .= "\n\nYou are an AI assistant that extracts NEW characters from a chapter. ";
         $systemPrompt .= "The user will provide the text of the chapter. Compare the characters mentioned in the text with the existing characters list from the context. ";
-        $systemPrompt .= "If you find any important named characters in the text that DO NOT exist in the context yet, output them. ";
+        $systemPrompt .= "If you find any important characters in the text that DO NOT exist in the context yet, output them. ";
+        $systemPrompt .= "CRITICAL RULE: ONLY extract characters that have an explicit PROPER NAME (e.g., 'John', 'Murayama Miu', 'Siti'). DO NOT extract generic descriptions, pronouns, or job titles as characters (e.g., ignore 'Gadis berjaket kulit', 'the waiter', 'old man', 'the king'). If a character's real name is not mentioned, ignore them completely. ";
         $systemPrompt .= "Return ONLY a valid JSON array of objects. Each object MUST have these keys: 'name' (string), 'role' (string: 'supporting' or 'minor'), 'physical_description' (string, inferred from text or empty), and 'personality_traits' (string, inferred from text or empty). ";
         $systemPrompt .= "If no new characters are found, return an empty array `[]`. Do NOT include markdown like ```json or any other text.";
 
