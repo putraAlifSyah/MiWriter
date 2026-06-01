@@ -552,27 +552,20 @@ const InlineAiModule = {
 };
 
 const AutoExtractModule = {
+    isExtracting: false,
+
     async run() {
+        if (this.isExtracting) return;
         if (!confirm('AI will read this chapter and create any NEW characters that are not in your list yet. This might take a moment and consume AI tokens. Continue?')) return;
         
         const btn = document.getElementById('btn-auto-extract');
         const originalText = btn.textContent;
         btn.textContent = 'Scanning...';
         btn.disabled = true;
+        this.isExtracting = true;
 
         try {
-            const res = await fetch('{{ route("chapters.extract-characters", [$book, $chapter]) }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                }
-            });
-            const data = await res.json();
-            
-            if (!res.ok) throw new Error(data.error || 'Failed to extract characters');
-            
+            const data = await this.doExtract();
             if (data.created > 0) {
                 alert(`Successfully created ${data.created} new characters! The page will now reload.`);
                 window.location.reload();
@@ -584,9 +577,62 @@ const AutoExtractModule = {
         } finally {
             btn.textContent = originalText;
             btn.disabled = false;
+            this.isExtracting = false;
         }
+    },
+
+    async runSilent() {
+        if (this.isExtracting) return;
+        this.isExtracting = true;
+        try {
+            const data = await this.doExtract(true);
+            if (data && data.created > 0) {
+                // Show a non-intrusive toast notification and reload page after a brief delay
+                const container = document.querySelector('.nwp-toast-container');
+                if (container) {
+                    const toast = document.createElement('div');
+                    toast.className = 'nwp-toast nwp-toast--success';
+                    toast.textContent = `AI extracted ${data.created} new character(s)!`;
+                    container.appendChild(toast);
+                    setTimeout(() => toast.remove(), 5000);
+                }
+            }
+        } catch (e) {
+            console.error('Silent auto-extract failed:', e);
+        } finally {
+            this.isExtracting = false;
+        }
+    },
+
+    async doExtract(keepalive = false) {
+        const res = await fetch('{{ route("chapters.extract-characters", [$book, $chapter]) }}', {
+            method: 'POST',
+            keepalive: keepalive,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to extract characters');
+        return data;
     }
 };
+
+@if($userHasAi)
+// Auto-detect every 10 minutes (600000 ms)
+setInterval(() => {
+    AutoExtractModule.runSilent();
+}, 600000);
+
+// Auto-detect when leaving page
+window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+        AutoExtractModule.runSilent();
+    }
+});
+@endif
 
 const BetaReaderModule = {
     chapterId: {{ $chapter->id }},

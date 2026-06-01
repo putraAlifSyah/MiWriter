@@ -58,7 +58,10 @@ class ChapterController extends Controller
             }
         }
         
-        return view('chapters.editor', compact('book', 'chapter', 'plotPoints', 'charactersInChapter', 'otherCharacters'));
+        $user = auth()->user();
+        $userHasAi = !empty($user->ai_api_key) && !empty($user->ai_provider);
+        
+        return view('chapters.editor', compact('book', 'chapter', 'plotPoints', 'charactersInChapter', 'otherCharacters', 'userHasAi'));
     }
 
     public function update(Request $request, Book $book, Chapter $chapter): JsonResponse
