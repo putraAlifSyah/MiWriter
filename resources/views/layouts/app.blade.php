@@ -52,25 +52,57 @@
                 <span style="font-weight:600; font-size:var(--font-size-sm);">AI Assistant</span>
                 <button onclick="AiChat.toggle()" class="ai-widget__close">&times;</button>
             </div>
+
+            <!-- Messages -->
             <div id="ai-messages" class="ai-widget__messages"></div>
+
+            <!-- Context Selector -->
+            <div class="ai-widget__context">
+                <div class="ai-widget__context-row">
+                    <select id="ai-book-select" class="ai-widget__select" onchange="AiChat.onBookChange()">
+                        <option value="">All books context</option>
+                        @auth
+                            @foreach(auth()->user()->books()->orderByDesc('updated_at')->get() as $b)
+                                <option value="{{ $b->id }}">{{ $b->title }}</option>
+                            @endforeach
+                        @endauth
+                    </select>
+                </div>
+
+                <!-- Chapter multi-select (shown only when a book is selected) -->
+                <div id="ai-chapter-selector" class="ai-widget__chapter-selector" style="display:none;">
+                    <div class="ai-widget__chapter-header">
+                        <span>Fokus ke Chapter:</span>
+                        <span id="ai-chapter-count" class="ai-widget__chapter-count"></span>
+                    </div>
+                    <input type="text" id="ai-chapter-search" class="ai-widget__chapter-search" 
+                           placeholder="Cari chapter..." oninput="AiChat.filterChapters()">
+                    <div id="ai-chapter-list" class="ai-widget__chapter-list"></div>
+                </div>
+            </div>
+
+            <!-- Input -->
             <div class="ai-widget__input">
-                <select id="ai-book-select" class="ai-widget__select">
-                    <option value="">All books context</option>
-                    @auth
-                        @foreach(auth()->user()->books()->orderByDesc('updated_at')->get() as $b)
-                            <option value="{{ $b->id }}">{{ $b->title }}</option>
-                        @endforeach
-                    @endauth
-                </select>
                 <form id="ai-form" onsubmit="AiChat.send(event)" style="display:flex; gap:6px;">
-                    <input type="text" id="ai-input" placeholder="Ask about your story..." autocomplete="off" style="flex:1;">
-                    <button type="submit" id="ai-send-btn">Send</button>
+                    <input type="text" id="ai-input" placeholder="Tanya tentang cerita kamu..." autocomplete="off" style="flex:1;">
+                    <button type="submit" id="ai-send-btn">Kirim</button>
                 </form>
             </div>
+
+            <!-- History Info + Clear -->
+            <div class="ai-widget__footer">
+                <div id="ai-history-info" class="ai-widget__history-info"></div>
+                <button type="button" id="ai-clear-btn" class="ai-widget__clear-btn" onclick="AiChat.clearHistory()">
+                    Clear Chat
+                </button>
+            </div>
+
             @auth
                 @if(!auth()->user()->ai_provider)
                 <div class="ai-widget__setup">
-                    <p style="font-size:var(--font-size-xs); color:var(--color-text-muted); margin-bottom:8px;">Set up your AI provider in <a href="{{ route('settings') }}">Settings</a> to start chatting.</p>
+                    <p style="font-size:var(--font-size-xs); color:var(--color-text-muted); margin-bottom:8px;">
+                        Atur AI provider di <a href="{{ route('settings') }}">Settings</a> untuk mulai chat.
+                    </p>
                 </div>
                 @endif
             @endauth

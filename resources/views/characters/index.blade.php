@@ -35,7 +35,7 @@
 <div id="create-form" class="nwp-card nwp-mb-3" style="display:none;">
     <h3 class="nwp-heading nwp-mb-2">New Character</h3>
     <form id="character-form">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px;">
             <div class="nwp-form-group">
                 <label class="nwp-label">Name</label>
                 <input type="text" name="name" class="nwp-input" maxlength="100" required>
@@ -108,8 +108,9 @@
                     </div>
                 </div>
 
-                <!-- Delete button -->
-                <div style="margin-top:12px; padding-top:8px; border-top:1px solid var(--color-border-light); display:flex; justify-content:end;">
+                <!-- Action buttons -->
+                <div style="margin-top:12px; padding-top:8px; border-top:1px solid var(--color-border-light); display:flex; justify-content:space-between; align-items:center;">
+                    <a href="{{ route('characters.show', [$book, $character]) }}" class="nwp-btn nwp-btn--sm nwp-btn--secondary" style="height:28px; padding:0 12px; font-size:11px;">View Details</a>
                     <button onclick="deleteCharacter({{ $character->id }})" class="nwp-btn nwp-btn--danger nwp-btn--sm" style="height:28px; padding:0 12px; font-size:11px;">Delete</button>
                 </div>
             </div>

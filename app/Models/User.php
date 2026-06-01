@@ -58,4 +58,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(WritingTarget::class);
     }
+
+    public function aiMessages(): HasMany
+    {
+        return $this->hasMany(AiMessage::class)->orderBy('created_at', 'asc');
+    }
 }

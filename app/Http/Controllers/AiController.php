@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AiMessage;
 use App\Models\Book;
 use App\Services\AiService;
 use Illuminate\Http\JsonResponse;
@@ -18,10 +19,13 @@ class AiController extends Controller
         $request->validate([
             'message' => 'required|string|min:1|max:2000',
             'book_id' => 'nullable|integer|exists:books,id',
+            'chapter_ids' => 'nullable|array',
+            'chapter_ids.*' => 'integer|exists:chapters,id',
         ]);
 
         $user = $request->user();
         $book = null;
+        $chapterIds = $request->input('chapter_ids', []);
 
         if ($request->book_id) {
             $book = Book::where('id', $request->book_id)
@@ -30,16 +34,81 @@ class AiController extends Controller
         }
 
         try {
-            $response = $this->aiService->ask($user, $request->message, $book);
+            $result = $this->aiService->ask($user, $request->message, $book, $chapterIds ?: null);
 
-            return response()->json([
-                'response' => $response,
-            ]);
+            // Save the conversation to history
+            $this->aiService->saveMessage($user, 'user', $request->message, $book?->id, $chapterIds ?: null);
+
+            $assistantMetadata = null;
+            if (!empty($result['action']) && !empty($result['created'])) {
+                $assistantMetadata = [
+                    'action' => $result['action'],
+                    'created' => $result['created'],
+                ];
+            }
+
+            $this->aiService->saveMessage(
+                $user,
+                'assistant',
+                $result['response'],
+                $book?->id,
+                $chapterIds ?: null,
+                $assistantMetadata
+            );
+
+            return response()->json($result);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    /**
+     * Get recent AI chat history (max 20 messages).
+     */
+    public function getHistory(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $history = $this->aiService->getRecentHistory($user, 20);
+
+        return response()->json([
+            'messages' => $history,
+            'total_shown' => count($history),
+            'limit' => 20,
+        ]);
+    }
+
+    /**
+     * Clear all AI chat history for the user.
+     */
+    public function clearHistory(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        AiMessage::where('user_id', $user->id)->delete();
+
+        return response()->json(['message' => 'Chat history cleared.']);
+    }
+
+    /**
+     * Lightweight list of chapters for a book (used by AI widget).
+     */
+    public function chaptersList(Book $book, Request $request): JsonResponse
+    {
+        // Ensure ownership
+        if ($book->user_id !== $request->user()->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $chapters = $book->chapters()
+            ->orderBy('order_number')
+            ->get(['id', 'title', 'word_count']);
+
+        return response()->json([
+            'chapters' => $chapters,
+        ]);
     }
 
     public function updateSettings(Request $request): JsonResponse

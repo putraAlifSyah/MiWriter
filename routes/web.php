@@ -52,6 +52,7 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
         Route::get('characters', [CharacterController::class, 'index'])->name('characters.index');
         Route::post('characters', [CharacterController::class, 'store'])->name('characters.store');
         Route::get('characters/relationships', [CharacterController::class, 'relationships'])->name('characters.relationships');
+        Route::get('characters/{character}', [CharacterController::class, 'show'])->name('characters.show');
         Route::put('characters/{character}', [CharacterController::class, 'update'])->name('characters.update');
         Route::delete('characters/{character}', [CharacterController::class, 'destroy'])->name('characters.destroy');
         Route::post('characters/{character}/image', [CharacterController::class, 'uploadImage'])->name('characters.image');
@@ -107,7 +108,14 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
 
     // AI
     Route::post('ai/ask', [\App\Http\Controllers\AiController::class, 'ask'])->name('ai.ask');
+    Route::get('ai/history', [\App\Http\Controllers\AiController::class, 'getHistory'])->name('ai.history');
+    Route::delete('ai/history', [\App\Http\Controllers\AiController::class, 'clearHistory'])->name('ai.history.clear');
     Route::post('ai/settings', [\App\Http\Controllers\AiController::class, 'updateSettings'])->name('ai.settings');
+
+    // Lightweight chapter list for AI widget
+    Route::get('books/{book}/chapters-list', [\App\Http\Controllers\AiController::class, 'chaptersList'])
+        ->middleware('book.owner')
+        ->name('books.chapters.list');
 
     // Guide
     Route::get('guide', [\App\Http\Controllers\GuideController::class, 'index'])->name('guide');

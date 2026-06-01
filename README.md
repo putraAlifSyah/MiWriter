@@ -21,6 +21,8 @@ Ask things like:
 
 You bring your own API key. Supported providers:
 
+**🔐 Security Guarantee:** Your API key is stored securely in your own local database. MiWriter does not store, transmit, or share your API key with any third party other than the AI provider you select. We have zero access to your keys or your story content.
+
 | Provider | Example Models |
 |----------|---------------|
 | OpenAI | gpt-4o, gpt-4-turbo, gpt-3.5-turbo |

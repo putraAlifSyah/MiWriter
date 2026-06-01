@@ -32,6 +32,14 @@ class CharacterController extends Controller
         return view('characters.index', compact('book', 'characters'));
     }
 
+    public function show(Book $book, Character $character): View
+    {
+        // Ensure character belongs to the book
+        abort_if($character->book_id !== $book->id, 404);
+
+        return view('characters.show', compact('book', 'character'));
+    }
+
     public function store(Request $request, Book $book): JsonResponse
     {
         $validated = $request->validate([

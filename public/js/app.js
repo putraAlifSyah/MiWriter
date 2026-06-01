@@ -123,20 +123,185 @@ const LocalStorageModule = {
     }
 };
 
-// AI Chat Widget
+// AI Chat Widget (Enhanced with History + Multi-Chapter Focus)
 const AiChat = {
     isOpen: false,
+    currentChapters: [],           // chapters of currently selected book
+    selectedChapterIds: [],        // currently checked chapter ids
+    isLoadingHistory: false,
 
     toggle() {
         this.isOpen = !this.isOpen;
         const panel = document.getElementById('ai-panel');
         const toggle = document.getElementById('ai-toggle');
+
         if (panel) {
             panel.style.display = this.isOpen ? 'flex' : 'none';
             toggle.textContent = this.isOpen ? '×' : 'AI';
+
             if (this.isOpen) {
+                // Load history the first time we open
+                if (document.getElementById('ai-messages').children.length === 0) {
+                    this.loadHistory();
+                }
                 document.getElementById('ai-input').focus();
             }
+        }
+    },
+
+    // Called when user changes the book dropdown
+    async onBookChange() {
+        const bookId = document.getElementById('ai-book-select').value;
+        const chapterSelector = document.getElementById('ai-chapter-selector');
+        const chapterList = document.getElementById('ai-chapter-list');
+
+        this.selectedChapterIds = [];
+        chapterList.innerHTML = '';
+
+        if (!bookId) {
+            chapterSelector.style.display = 'none';
+            this.updateChapterCount();
+            return;
+        }
+
+        chapterSelector.style.display = 'block';
+
+        try {
+            const res = await fetch(`/books/${bookId}/chapters-list`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                }
+            });
+
+            const data = await res.json();
+            this.currentChapters = data.chapters || [];
+
+            this.renderChapterList(this.currentChapters);
+            this.updateChapterCount();
+        } catch (e) {
+            console.error('Failed to load chapters', e);
+            chapterList.innerHTML = '<div style="padding:6px;font-size:12px;color:#888">Gagal memuat daftar chapter.</div>';
+        }
+    },
+
+    // Render the checkbox list of chapters
+    renderChapterList(chapters) {
+        const container = document.getElementById('ai-chapter-list');
+        container.innerHTML = '';
+
+        if (chapters.length === 0) {
+            container.innerHTML = '<div style="padding:6px;font-size:12px;color:#888">Belum ada chapter.</div>';
+            return;
+        }
+
+        chapters.forEach(ch => {
+            const div = document.createElement('div');
+            div.className = 'ai-widget__chapter-item';
+            div.innerHTML = `
+                <input type="checkbox" id="ch-${ch.id}" value="${ch.id}">
+                <label for="ch-${ch.id}" class="ai-widget__chapter-item-label">
+                    ${ch.title}
+                    <span class="word-count">(${ch.word_count} kata)</span>
+                </label>
+            `;
+
+            const checkbox = div.querySelector('input');
+            checkbox.addEventListener('change', () => {
+                this.updateSelectedChapters();
+            });
+
+            container.appendChild(div);
+        });
+    },
+
+    // Filter chapters based on search input
+    filterChapters() {
+        const search = document.getElementById('ai-chapter-search').value.toLowerCase().trim();
+        const container = document.getElementById('ai-chapter-list');
+        const items = container.querySelectorAll('.ai-widget__chapter-item');
+
+        items.forEach(item => {
+            const label = item.querySelector('.ai-widget__chapter-item-label');
+            if (!label) return;
+
+            const text = label.textContent.toLowerCase();
+            item.style.display = text.includes(search) ? '' : 'none';
+        });
+    },
+
+    // Update internal selectedChapterIds from checkboxes
+    updateSelectedChapters() {
+        const container = document.getElementById('ai-chapter-list');
+        const checked = container.querySelectorAll('input[type="checkbox"]:checked');
+        
+        this.selectedChapterIds = Array.from(checked).map(cb => parseInt(cb.value));
+        this.updateChapterCount();
+    },
+
+    updateChapterCount() {
+        const el = document.getElementById('ai-chapter-count');
+        if (!el) return;
+
+        const count = this.selectedChapterIds.length;
+
+        if (count === 0) {
+            el.textContent = 'Semua chapter';
+        } else {
+            el.textContent = `${count} dipilih`;
+        }
+    },
+
+    // Load chat history from backend (max 20)
+    async loadHistory() {
+        if (this.isLoadingHistory) return;
+        this.isLoadingHistory = true;
+
+        const container = document.getElementById('ai-messages');
+        container.innerHTML = '<div class="ai-widget__msg ai-widget__msg--loading">Memuat riwayat chat...</div>';
+
+        try {
+            const res = await fetch('/ai/history', {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                }
+            });
+
+            const data = await res.json();
+            container.innerHTML = '';
+
+            if (data.messages && data.messages.length > 0) {
+                data.messages.forEach(msg => {
+                    if (msg.role === 'user' || msg.role === 'assistant') {
+                        this.addMessage(msg.content, msg.role === 'user' ? 'user' : 'ai', true);
+                    }
+                });
+
+                // Show info about limited history
+                this.showHistoryInfo(data.total_shown, data.limit);
+            } else {
+                const welcome = document.createElement('div');
+                welcome.className = 'ai-widget__msg ai-widget__msg--ai';
+                welcome.style.opacity = '0.7';
+                welcome.textContent = 'Halo! Ada yang bisa saya bantu dengan cerita kamu hari ini?';
+                container.appendChild(welcome);
+            }
+        } catch (e) {
+            container.innerHTML = '<div class="ai-widget__msg ai-widget__msg--error">Gagal memuat riwayat chat.</div>';
+        } finally {
+            this.isLoadingHistory = false;
+            container.scrollTop = container.scrollHeight;
+        }
+    },
+
+    showHistoryInfo(shown, limit) {
+        const info = document.getElementById('ai-history-info');
+        if (!info) return;
+
+        info.innerHTML = `Menampilkan ${shown} pesan terakhir`;
+        if (shown >= limit) {
+            info.innerHTML += ` <span style="opacity:0.6">(riwayat dibatasi)</span>`;
         }
     },
 
@@ -149,13 +314,19 @@ const AiChat = {
         const bookId = document.getElementById('ai-book-select').value;
         const sendBtn = document.getElementById('ai-send-btn');
 
-        // Add user message
+        // Add user message immediately
         this.addMessage(message, 'user');
         input.value = '';
         sendBtn.disabled = true;
 
-        // Show loading
-        const loadingEl = this.addMessage('Thinking...', 'loading');
+        const loadingEl = this.addMessage('Sedang berpikir...', 'loading');
+
+        // Prepare payload
+        const payload = {
+            message: message,
+            book_id: bookId || null,
+            chapter_ids: this.selectedChapterIds.length > 0 ? this.selectedChapterIds : null,
+        };
 
         try {
             const response = await fetch('/ai/ask', {
@@ -165,10 +336,7 @@ const AiChat = {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify({
-                    message: message,
-                    book_id: bookId || null,
-                }),
+                body: JSON.stringify(payload),
             });
 
             loadingEl.remove();
@@ -176,26 +344,82 @@ const AiChat = {
             const data = await response.json();
 
             if (!response.ok) {
-                this.addMessage(data.error || 'Something went wrong.', 'error');
+                this.addMessage(data.error || 'Terjadi kesalahan.', 'error');
             } else {
                 this.addMessage(data.response, 'ai');
+
+                if (data.action && data.created) {
+                    this.addActionMessage(data.created);
+                }
             }
         } catch (err) {
             loadingEl.remove();
-            this.addMessage('Network error. Please try again.', 'error');
+            this.addMessage('Koneksi bermasalah. Coba lagi.', 'error');
         } finally {
             sendBtn.disabled = false;
             input.focus();
         }
     },
 
-    addMessage(text, type) {
+    addMessage(text, type, skipScroll = false) {
         const container = document.getElementById('ai-messages');
         const msg = document.createElement('div');
         msg.className = `ai-widget__msg ai-widget__msg--${type}`;
         msg.textContent = text;
         container.appendChild(msg);
-        container.scrollTop = container.scrollHeight;
+
+        if (!skipScroll) {
+            container.scrollTop = container.scrollHeight;
+        }
         return msg;
+    },
+
+    addActionMessage(created) {
+        const container = document.getElementById('ai-messages');
+        const msg = document.createElement('div');
+        msg.className = 'ai-widget__msg ai-widget__msg--action';
+
+        let html = `<strong>✓ Dibuat:</strong> <strong>${created.name}</strong>`;
+
+        if (created.type === 'character' && created.role) {
+            html += ` <span style="opacity:0.75">(${created.role})</span>`;
+        }
+
+        if (created.preview) {
+            html += `<div style="margin-top:4px; font-size:11px; opacity:0.85; line-height:1.3;">${created.preview}...</div>`;
+        }
+
+        msg.innerHTML = html;
+        container.appendChild(msg);
+        container.scrollTop = container.scrollHeight;
+    },
+
+    // Clear all chat history
+    async clearHistory() {
+        if (!confirm('Hapus semua riwayat chat dengan AI?')) return;
+
+        try {
+            await fetch('/ai/history', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                }
+            });
+
+            // Clear UI
+            document.getElementById('ai-messages').innerHTML = '';
+            document.getElementById('ai-history-info').innerHTML = '';
+
+            // Show fresh welcome
+            const welcome = document.createElement('div');
+            welcome.className = 'ai-widget__msg ai-widget__msg--ai';
+            welcome.style.opacity = '0.7';
+            welcome.textContent = 'Riwayat chat sudah dibersihkan. Ada yang bisa saya bantu?';
+            document.getElementById('ai-messages').appendChild(welcome);
+
+        } catch (e) {
+            alert('Gagal menghapus riwayat chat.');
+        }
     }
 };
