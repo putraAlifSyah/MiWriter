@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Book;
+use App\Services\StatisticsService;
+use App\Services\WritingTargetService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class StatisticsController extends Controller
+{
+    public function __construct(
+        private StatisticsService $statisticsService,
+        private WritingTargetService $targetService,
+    ) {
+    }
+
+    public function show(Request $request, Book $book): View
+    {
+        $user = $request->user();
+
+        $stats = [
+            'total_word_count' => $this->statisticsService->getTotalWordCount($book),
+            'current_streak' => $this->statisticsService->getCurrentStreak($user),
+            'longest_streak' => $this->statisticsService->getLongestStreak($user),
+            'average_daily' => $this->statisticsService->getAverageDailyWords($user),
+            'estimated_completion' => $this->statisticsService->getEstimatedCompletion($book, $user),
+            'daily_progress' => $this->targetService->getDailyProgress($book, $user),
+            'weekly_progress' => $this->targetService->getWeeklyProgress($book, $user),
+        ];
+
+        return view('statistics.index', compact('book', 'stats'));
+    }
+
+    public function heatmap(Request $request): JsonResponse
+    {
+        $data = $this->statisticsService->getHeatmapData($request->user());
+        return response()->json($data);
+    }
+
+    public function progressChart(Book $book): JsonResponse
+    {
+        $data = $this->statisticsService->getProgressChartData($book);
+        return response()->json($data);
+    }
+}

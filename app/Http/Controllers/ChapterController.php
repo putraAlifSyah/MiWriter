@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Book;
+use App\Models\Chapter;
+use App\Services\ChapterService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class ChapterController extends Controller
+{
+    public function __construct(private ChapterService $chapterService)
+    {
+    }
+
+    public function store(Book $book): JsonResponse
+    {
+        $chapter = $this->chapterService->create($book);
+
+        return response()->json([
+            'message' => 'Chapter created.',
+            'chapter' => $chapter,
+            'redirect' => route('chapters.show', [$book, $chapter]),
+        ], 201);
+    }
+
+    public function show(Book $book, Chapter $chapter): View
+    {
+        return view('chapters.editor', compact('book', 'chapter'));
+    }
+
+    public function update(Request $request, Book $book, Chapter $chapter): JsonResponse
+    {
+        $request->validate([
+            'title' => 'required|string|min:1|max:200',
+        ]);
+
+        $chapter->update(['title' => $request->title]);
+
+        return response()->json([
+            'message' => 'Chapter renamed.',
+            'chapter' => $chapter,
+        ]);
+    }
+
+    public function destroy(Book $book, Chapter $chapter): JsonResponse
+    {
+        $this->chapterService->delete($chapter);
+
+        return response()->json([
+            'message' => 'Chapter deleted.',
+        ]);
+    }
+
+    public function reorder(Request $request, Book $book): JsonResponse
+    {
+        $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'integer|exists:chapters,id',
+        ]);
+
+        $this->chapterService->reorder($book, $request->order);
+
+        return response()->json([
+            'message' => 'Chapters reordered.',
+        ]);
+    }
+
+    public function saveContent(Request $request, Book $book, Chapter $chapter): JsonResponse
+    {
+        $request->validate([
+            'content_delta' => 'required|array',
+            'content_html' => 'required|string',
+        ]);
+
+        $chapter = $this->chapterService->updateContent(
+            $chapter,
+            $request->content_delta,
+            $request->content_html
+        );
+
+        return response()->json([
+            'message' => 'Content saved.',
+            'word_count' => $chapter->word_count,
+            'saved_at' => now()->toIso8601String(),
+        ]);
+    }
+}

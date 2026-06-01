@@ -1,0 +1,810 @@
+/* === Novel Writing Platform - Treto Theme === */
+@import url("https://fonts.googleapis.com/css2?family=Jost:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+/* === CSS Variables === */
+:root {
+    --color-accent: #fa4729;
+    --color-accent-hover: #e03d22;
+    --color-text-primary: #101010;
+    --color-text-secondary: #202020;
+    --color-text-muted: #666666;
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f8f8f8;
+    --color-border: #101010;
+    --color-border-light: rgba(16, 16, 16, 0.18);
+    --color-shadow: rgba(16, 16, 16, 0.18);
+    --color-success: #28a745;
+    --color-warning: #ffc107;
+    --color-danger: #dc3545;
+
+    --font-family: 'Jost', sans-serif;
+    --font-size-base: 18px;
+    --font-size-sm: 14px;
+    --font-size-xs: 12px;
+    --font-size-lg: 20px;
+    --font-size-xl: 24px;
+    --line-height-base: 170%;
+
+    --shadow-offset: 7px 7px 0px 0px;
+    --border-width: 2px;
+    --border-radius: 0px;
+
+    --sidebar-width: 260px;
+    --header-height: 60px;
+    --touch-target-min: 44px;
+}
+
+/* === Reset === */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* === Dotted Background Pattern === */
+body::after {
+    content: "";
+    position: fixed;
+    pointer-events: none;
+    z-index: 999999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-image: radial-gradient(circle, var(--color-text-primary) 1px, transparent 1px);
+    background-size: 10px 10px;
+    opacity: 0.06;
+}
+
+/* === Typography === */
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-primary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+
+a {
+    color: var(--color-accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--color-accent-hover);
+}
+
+.nwp-heading {
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.nwp-label {
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* === Cards (Bordered Frame Style) === */
+.nwp-card {
+    border: var(--border-width) solid var(--color-border);
+    box-shadow: var(--shadow-offset) var(--color-shadow);
+    background: var(--color-bg-primary);
+    padding: 24px;
+    transition: box-shadow 0.3s ease;
+}
+
+.nwp-card:hover {
+    box-shadow: 3px 3px 0px 0px var(--color-shadow);
+}
+
+/* === Buttons === */
+.nwp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+    padding: 0 32px;
+    font-family: var(--font-family);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    text-decoration: none;
+    letter-spacing: 1px;
+    border: var(--border-width) solid var(--color-accent);
+    background-color: var(--color-accent);
+    color: #ffffff;
+    box-shadow: var(--shadow-offset) rgba(250, 71, 41, 0.18);
+    cursor: pointer;
+    transition: box-shadow 0.3s ease, transform 0.1s ease;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+}
+
+.nwp-btn:hover {
+    box-shadow: 0px 0px 0px 0px rgba(250, 71, 41, 0.18);
+    transform: translate(3px, 3px);
+    color: #ffffff;
+}
+
+.nwp-btn--secondary {
+    border-color: var(--color-border);
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-offset) var(--color-shadow);
+}
+
+.nwp-btn--secondary:hover {
+    box-shadow: 0px 0px 0px 0px var(--color-shadow);
+    color: var(--color-text-primary);
+}
+
+.nwp-btn--danger {
+    border-color: var(--color-danger);
+    background-color: var(--color-danger);
+    box-shadow: var(--shadow-offset) rgba(220, 53, 69, 0.18);
+}
+
+.nwp-btn--danger:hover {
+    box-shadow: 0px 0px 0px 0px rgba(220, 53, 69, 0.18);
+}
+
+.nwp-btn--sm {
+    height: 36px;
+    padding: 0 16px;
+    font-size: var(--font-size-xs);
+}
+
+.nwp-btn--block {
+    width: 100%;
+}
+
+/* === Form Fields === */
+.nwp-form-group {
+    margin-bottom: 20px;
+}
+
+.nwp-input {
+    height: 50px;
+    width: 100%;
+    padding: 0 16px;
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    border: var(--border-width) solid var(--color-border-light);
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    transition: border-color 0.3s ease;
+}
+
+.nwp-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.nwp-input--error {
+    border-color: var(--color-danger);
+}
+
+.nwp-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    border: var(--border-width) solid var(--color-border-light);
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    resize: vertical;
+    min-height: 120px;
+    transition: border-color 0.3s ease;
+}
+
+.nwp-textarea:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.nwp-select {
+    height: 50px;
+    width: 100%;
+    padding: 0 16px;
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    border: var(--border-width) solid var(--color-border-light);
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    appearance: none;
+    cursor: pointer;
+}
+
+.nwp-error {
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+    margin-top: 4px;
+}
+
+/* === Progress Bar === */
+.nwp-progress {
+    width: 100%;
+    height: 8px;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border-light);
+    overflow: hidden;
+}
+
+.nwp-progress__bar {
+    height: 100%;
+    background: var(--color-accent);
+    transition: width 0.5s ease;
+}
+
+.nwp-progress__bar--complete {
+    background: var(--color-success);
+}
+
+/* === Layout === */
+.nwp-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.nwp-sidebar {
+    width: var(--sidebar-width);
+    border-right: var(--border-width) solid var(--color-border-light);
+    padding: 24px 0;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--color-bg-primary);
+    z-index: 1000;
+}
+
+.nwp-sidebar__logo {
+    padding: 0 24px 24px;
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--color-border-light);
+    margin-bottom: 24px;
+}
+
+.nwp-sidebar__logo a {
+    color: var(--color-text-primary);
+}
+
+.nwp-sidebar__logo span {
+    color: var(--color-accent);
+}
+
+.nwp-sidebar__nav {
+    list-style: none;
+    padding: 0;
+}
+
+.nwp-sidebar__nav-item {
+    display: block;
+}
+
+.nwp-sidebar__nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 24px;
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    min-height: var(--touch-target-min);
+}
+
+.nwp-sidebar__nav-link:hover,
+.nwp-sidebar__nav-link--active {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-accent);
+}
+
+.nwp-main {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 32px;
+    min-height: 100vh;
+}
+
+/* === Mobile Sidebar === */
+.nwp-sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1001;
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    border: var(--border-width) solid var(--color-border);
+    background: var(--color-bg-primary);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.nwp-sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+@media screen and (max-width: 767px) {
+    .nwp-sidebar {
+        left: -100%;
+        width: 80%;
+        max-width: 300px;
+        transition: left 0.3s ease;
+    }
+
+    .nwp-sidebar--open {
+        left: 0;
+    }
+
+    .nwp-sidebar--open ~ .nwp-sidebar-overlay {
+        display: block;
+    }
+
+    .nwp-sidebar-toggle {
+        display: flex;
+    }
+
+    .nwp-main {
+        margin-left: 0;
+        padding: 70px 16px 16px;
+    }
+}
+
+/* === Guest Layout (Auth pages) === */
+.nwp-guest {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+}
+
+.nwp-guest__container {
+    width: 100%;
+    max-width: 440px;
+}
+
+.nwp-guest__title {
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    font-size: 1.5rem;
+}
+
+.nwp-guest__subtitle {
+    color: var(--color-text-muted);
+    margin-bottom: 32px;
+    font-size: var(--font-size-sm);
+}
+
+/* === Book Card (Dashboard) === */
+.nwp-book-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 24px;
+}
+
+.nwp-book-card {
+    display: flex;
+    flex-direction: column;
+    border: var(--border-width) solid var(--color-border);
+    box-shadow: var(--shadow-offset) var(--color-shadow);
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.nwp-book-card:hover {
+    box-shadow: 3px 3px 0px 0px var(--color-shadow);
+    transform: translate(2px, 2px);
+    color: inherit;
+}
+
+.nwp-book-card__cover {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    border-bottom: var(--border-width) solid var(--color-border);
+    background: var(--color-bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: 3rem;
+}
+
+.nwp-book-card__cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.nwp-book-card__info {
+    padding: 16px;
+}
+
+.nwp-book-card__title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.nwp-book-card__meta {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* === Editor === */
+.nwp-editor-container {
+    border: var(--border-width) solid var(--color-border-light);
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.nwp-editor-container.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: 10000;
+    background: var(--color-bg-primary);
+    border: none;
+}
+
+.nwp-editor__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    border-top: 1px solid var(--color-border-light);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+/* === Toast Notifications === */
+.nwp-toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 100000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nwp-toast {
+    padding: 12px 24px;
+    border: var(--border-width) solid var(--color-border);
+    box-shadow: var(--shadow-offset) var(--color-shadow);
+    background: var(--color-bg-primary);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    animation: nwp-slideIn 0.3s ease;
+    max-width: 360px;
+}
+
+.nwp-toast--success {
+    border-color: var(--color-success);
+}
+
+.nwp-toast--error {
+    border-color: var(--color-danger);
+}
+
+.nwp-toast--info {
+    border-color: var(--color-accent);
+}
+
+@keyframes nwp-slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* === Badges === */
+.nwp-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    border: 1px solid var(--color-accent);
+    color: var(--color-accent);
+}
+
+.nwp-badge--filled {
+    background: var(--color-accent);
+    color: #ffffff;
+}
+
+.nwp-badge--success {
+    border-color: var(--color-success);
+    color: var(--color-success);
+}
+
+.nwp-badge--muted {
+    border-color: var(--color-text-muted);
+    color: var(--color-text-muted);
+}
+
+/* === Empty State === */
+.nwp-empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--color-text-muted);
+}
+
+.nwp-empty-state__icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.nwp-empty-state__title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    color: var(--color-text-primary);
+}
+
+.nwp-empty-state__text {
+    margin-bottom: 24px;
+}
+
+/* === Stats Panel === */
+.nwp-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.nwp-stat {
+    padding: 16px;
+    border: 1px solid var(--color-border-light);
+}
+
+.nwp-stat__value {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--color-accent);
+}
+
+.nwp-stat__label {
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+}
+
+/* === Tabs === */
+.nwp-tabs {
+    display: flex;
+    border-bottom: var(--border-width) solid var(--color-border-light);
+    margin-bottom: 24px;
+    overflow-x: auto;
+}
+
+.nwp-tab {
+    padding: 12px 24px;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+}
+
+.nwp-tab:hover {
+    color: var(--color-text-primary);
+}
+
+.nwp-tab--active {
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
+}
+
+/* === Modal === */
+.nwp-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 50000;
+    align-items: center;
+    justify-content: center;
+}
+
+.nwp-modal-overlay--active {
+    display: flex;
+}
+
+.nwp-modal {
+    background: var(--color-bg-primary);
+    border: var(--border-width) solid var(--color-border);
+    box-shadow: var(--shadow-offset) var(--color-shadow);
+    padding: 32px;
+    max-width: 500px;
+    width: 90%;
+}
+
+.nwp-modal__title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+}
+
+.nwp-modal__actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+/* === Utility === */
+.nwp-accent { color: var(--color-accent); }
+.nwp-mt-1 { margin-top: 8px; }
+.nwp-mt-2 { margin-top: 16px; }
+.nwp-mt-3 { margin-top: 24px; }
+.nwp-mt-4 { margin-top: 32px; }
+.nwp-mb-1 { margin-bottom: 8px; }
+.nwp-mb-2 { margin-bottom: 16px; }
+.nwp-mb-3 { margin-bottom: 24px; }
+.nwp-mb-4 { margin-bottom: 32px; }
+.nwp-text-center { text-align: center; }
+.nwp-text-muted { color: var(--color-text-muted); }
+.nwp-text-sm { font-size: var(--font-size-sm); }
+
+/* === Responsive === */
+@media screen and (max-width: 1199px) {
+    .nwp-book-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+@media screen and (max-width: 767px) {
+    :root {
+        --font-size-base: 16px;
+    }
+
+    .nwp-book-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 16px;
+    }
+
+    .nwp-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .nwp-card {
+        padding: 16px;
+    }
+}
+
+/* === Dark Mode === */
+[data-theme="dark"] {
+    --color-accent: #ff6347;
+    --color-accent-hover: #ff4500;
+    --color-text-primary: #e8e8e8;
+    --color-text-secondary: #d0d0d0;
+    --color-text-muted: #999999;
+    --color-bg-primary: #1a1a1a;
+    --color-bg-secondary: #242424;
+    --color-border: #444444;
+    --color-border-light: rgba(255, 255, 255, 0.12);
+    --color-shadow: rgba(0, 0, 0, 0.4);
+    --color-success: #4caf50;
+    --color-warning: #ffca28;
+    --color-danger: #ef5350;
+}
+
+[data-theme="dark"] body::after {
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.5) 1px, transparent 1px);
+    opacity: 0.04;
+}
+
+[data-theme="dark"] .nwp-btn--secondary {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .nwp-btn--secondary:hover {
+    color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .ql-toolbar.ql-snow {
+    border-color: var(--color-border-light);
+    background: var(--color-bg-secondary);
+}
+
+[data-theme="dark"] .ql-container.ql-snow {
+    border-color: var(--color-border-light);
+}
+
+[data-theme="dark"] .ql-editor {
+    color: var(--color-text-primary);
+    background: var(--color-bg-primary);
+}
+
+[data-theme="dark"] .ql-snow .ql-stroke {
+    stroke: var(--color-text-primary);
+}
+
+[data-theme="dark"] .ql-snow .ql-fill {
+    fill: var(--color-text-primary);
+}
+
+[data-theme="dark"] .ql-snow .ql-picker-label {
+    color: var(--color-text-primary);
+}
+
+[data-theme="dark"] .ql-snow .ql-picker-options {
+    background: var(--color-bg-secondary);
+    border-color: var(--color-border-light);
+}
+
+/* Dark Mode Toggle Button */
+.nwp-theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.2s ease;
+    border-radius: 0;
+}
+
+.nwp-theme-toggle:hover {
+    background: var(--color-border-light);
+}
