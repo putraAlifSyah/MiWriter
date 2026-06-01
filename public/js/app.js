@@ -122,3 +122,80 @@ const LocalStorageModule = {
         localStorage.removeItem(`unsaved_${chapterId}`);
     }
 };
+
+// AI Chat Widget
+const AiChat = {
+    isOpen: false,
+
+    toggle() {
+        this.isOpen = !this.isOpen;
+        const panel = document.getElementById('ai-panel');
+        const toggle = document.getElementById('ai-toggle');
+        if (panel) {
+            panel.style.display = this.isOpen ? 'flex' : 'none';
+            toggle.textContent = this.isOpen ? '×' : 'AI';
+            if (this.isOpen) {
+                document.getElementById('ai-input').focus();
+            }
+        }
+    },
+
+    async send(e) {
+        e.preventDefault();
+        const input = document.getElementById('ai-input');
+        const message = input.value.trim();
+        if (!message) return;
+
+        const bookId = document.getElementById('ai-book-select').value;
+        const sendBtn = document.getElementById('ai-send-btn');
+
+        // Add user message
+        this.addMessage(message, 'user');
+        input.value = '';
+        sendBtn.disabled = true;
+
+        // Show loading
+        const loadingEl = this.addMessage('Thinking...', 'loading');
+
+        try {
+            const response = await fetch('/ai/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    book_id: bookId || null,
+                }),
+            });
+
+            loadingEl.remove();
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                this.addMessage(data.error || 'Something went wrong.', 'error');
+            } else {
+                this.addMessage(data.response, 'ai');
+            }
+        } catch (err) {
+            loadingEl.remove();
+            this.addMessage('Network error. Please try again.', 'error');
+        } finally {
+            sendBtn.disabled = false;
+            input.focus();
+        }
+    },
+
+    addMessage(text, type) {
+        const container = document.getElementById('ai-messages');
+        const msg = document.createElement('div');
+        msg.className = `ai-widget__msg ai-widget__msg--${type}`;
+        msg.textContent = text;
+        container.appendChild(msg);
+        container.scrollTop = container.scrollHeight;
+        return msg;
+    }
+};

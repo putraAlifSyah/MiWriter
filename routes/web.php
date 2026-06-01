@@ -105,6 +105,10 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
     // Settings
     Route::get('settings', [SettingsController::class, 'show'])->name('settings');
 
+    // AI
+    Route::post('ai/ask', [\App\Http\Controllers\AiController::class, 'ask'])->name('ai.ask');
+    Route::post('ai/settings', [\App\Http\Controllers\AiController::class, 'updateSettings'])->name('ai.settings');
+
     // Guide
     Route::get('guide', [\App\Http\Controllers\GuideController::class, 'index'])->name('guide');
     Route::put('settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile');

@@ -19,11 +19,15 @@ class User extends Authenticatable
         'avatar_path',
         'timezone',
         'date_format',
+        'ai_provider',
+        'ai_model',
+        'ai_api_key',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'ai_api_key',
     ];
 
     protected function casts(): array
