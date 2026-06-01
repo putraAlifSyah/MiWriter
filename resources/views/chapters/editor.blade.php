@@ -15,7 +15,7 @@
     body.focus-mode-active .nwp-sidebar,
     body.focus-mode-active .nwp-editor__footer,
     body.focus-mode-active .ai-widget,
-    body.focus-mode-active > div:not(.nwp-main) { display: none !important; }
+    body.focus-mode-active .nwp-sidebar-toggle { display: none !important; }
     
     body.focus-mode-active .nwp-main { margin-left: 0 !important; max-width: 800px; margin: 0 auto; padding-top: 60px; }
     
