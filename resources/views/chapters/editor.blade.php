@@ -23,8 +23,8 @@
     body.focus-mode-active:hover .focus-hidden { opacity: 1; pointer-events: auto; }
     
     body.focus-mode-active .ql-editor { font-size: 18px; line-height: 1.8; padding-bottom: 50vh; }
-    body.focus-mode-active .ql-editor p { color: var(--color-text-muted); transition: color 0.3s; }
-    body.focus-mode-active .ql-editor p.focus-active { color: var(--color-text-primary); }
+    body.focus-mode-active .ql-editor > * { color: var(--color-text-muted); transition: color 0.3s; }
+    body.focus-mode-active .ql-editor > *.focus-active { color: var(--color-text-primary); }
 </style>
 @endpush
 
@@ -111,6 +111,7 @@ const EditorModule = {
             this.isDirty = true;
             this.updateWordCount();
             this.setStatus('Unsaved changes...', '');
+            this.updateFocusLine(); // Update focus on type
 
             // Clear timer sebelumnya, set timer baru
             clearTimeout(this.debounceTimer);
@@ -119,6 +120,10 @@ const EditorModule = {
                     this.save();
                 }
             }, 2000); // 2 detik setelah berhenti ketik
+        });
+        
+        this.quill.on('selection-change', (range) => {
+            this.updateFocusLine(range);
         });
 
         // Manual save (Ctrl+S / Cmd+S)
@@ -213,26 +218,46 @@ const EditorModule = {
         document.body.classList.toggle('focus-mode-active');
         if (document.body.classList.contains('focus-mode-active')) {
             NotificationModule.info('Focus Mode Enabled. Move mouse to top to see menu.');
-            this.setupFocusTracking();
         }
+        this.updateFocusLine();
     },
 
-    setupFocusTracking() {
-        this.quill.on('selection-change', (range) => {
-            if (range && document.body.classList.contains('focus-mode-active')) {
-                const [line, offset] = this.quill.getLine(range.index);
-                document.querySelectorAll('.ql-editor p').forEach(p => p.classList.remove('focus-active'));
-                if (line && line.domNode) {
-                    line.domNode.classList.add('focus-active');
-                    // Scroll line to center roughly
-                    const bounds = this.quill.getBounds(range.index);
-                    if (bounds) {
-                        const editorNode = document.querySelector('.ql-editor');
-                        editorNode.scrollTop = bounds.top - (window.innerHeight / 2) + 100;
+    updateFocusLine(range = null) {
+        if (!document.body.classList.contains('focus-mode-active')) {
+            document.querySelectorAll('.ql-editor > *').forEach(el => el.classList.remove('focus-active'));
+            return;
+        }
+
+        if (!range) {
+            range = this.quill.getSelection();
+        }
+
+        if (range) {
+            const [line] = this.quill.getLine(range.index);
+            const currentActive = document.querySelector('.ql-editor > *.focus-active');
+            
+            if (currentActive && (!line || line.domNode !== currentActive)) {
+                currentActive.classList.remove('focus-active');
+            }
+            
+            if (line && line.domNode) {
+                line.domNode.classList.add('focus-active');
+                
+                // Optional: Auto-scroll to keep line centered
+                const bounds = this.quill.getBounds(range.index);
+                if (bounds) {
+                    const editorRect = document.querySelector('.ql-editor').getBoundingClientRect();
+                    const absoluteTop = window.scrollY + editorRect.top + bounds.top;
+                    // Only scroll if it's too far from center to avoid jitter while typing
+                    if (Math.abs(absoluteTop - window.scrollY - window.innerHeight / 2) > 100) {
+                        window.scrollTo({
+                            top: absoluteTop - (window.innerHeight / 2) + 100,
+                            behavior: 'smooth'
+                        });
                     }
                 }
             }
-        });
+        }
     }
 };
 
