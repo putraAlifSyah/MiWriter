@@ -1,57 +1,102 @@
-# MiWriter
+# MiWriter — Write Smarter with AI
 
-A novel writing platform with built-in AI assistant. Write, organize, and manage your novels with intelligent help that understands your characters, plot, and world.
+MiWriter is a novel writing platform with a built-in AI assistant that understands your entire story. It knows your characters, plot, locations, and world — so you can ask it anything while you write.
 
-## AI-Powered Writing Assistant
+## AI Ask — Your Context-Aware Writing Partner
 
-MiWriter includes a context-aware AI chat that knows your entire book — characters, locations, plot points, world-building elements, and chapter structure. Ask it anything about your story, get suggestions, brainstorm ideas, or check for consistency.
+The AI assistant lives in every page as a floating chat. Select a book, and it instantly has full context of:
 
-**Bring your own API key.** Choose from multiple providers:
-- OpenAI (GPT-4o, GPT-4, GPT-3.5)
-- Anthropic (Claude 3.5, Claude 3)
-- Google (Gemini Pro, Gemini Flash)
-- Groq (Llama, Mixtral)
-- OpenRouter (access to 100+ models)
+- All your characters (names, roles, backstories)
+- Your plot outline (every plot point, act, status)
+- Locations and their hierarchy
+- World-building elements (magic systems, cultures, rules)
+- Chapter structure and word counts
 
-The AI assistant is accessible from any page via the floating chat button. Select a specific book for focused context, or ask general questions across all your projects.
+Ask things like:
+- "What's the motivation of my antagonist?"
+- "Suggest a plot twist for act 2"
+- "Does my timeline have any inconsistencies?"
+- "Help me describe the atmosphere of the capital city"
+- "What would happen if these two characters met?"
 
-## Features
+You bring your own API key. Supported providers:
 
-- Rich text editor with real-time auto-save (2s debounce)
-- Book management with cover images
-- Character builder with photo references and relationship mapping
-- Location hierarchy builder (up to 5 levels)
-- Plot timeline with sequential ordering
-- Daily and weekly writing targets with progress tracking
-- Writing statistics: streaks, word count history, estimated completion
-- World-building tools with categories and cross-references
-- Full-text search across all book content
-- Export to plain text or Markdown
+| Provider | Example Models |
+|----------|---------------|
+| OpenAI | gpt-4o, gpt-4-turbo, gpt-3.5-turbo |
+| Anthropic | claude-sonnet-4-20250514, claude-3-haiku |
+| Google | gemini-3.5-flash, gemini-3.1-flash-lite |
+| Groq | llama-3.3-70b-versatile, mixtral-8x7b |
+| OpenRouter | any of 100+ models |
+
+Setup takes 30 seconds: go to Settings, pick a provider, paste your key, done.
+
+## Core Features
+
+**Writing**
+- Rich text editor (Quill.js) with bold, italic, headings, lists, blockquotes
+- Auto-save 2 seconds after you stop typing
+- Real-time word count
+- Fullscreen distraction-free mode
+- Offline backup to browser storage
+
+**Organization**
+- Multiple books with cover images
+- Chapters with drag-and-drop reordering
+- Character profiles with photo references
+- Location builder with 5-level hierarchy
+- Plot timeline with act structure (Beginning / Middle / End)
+- World-building entries grouped by category
+
+**Productivity**
+- Daily and weekly writing targets
+- Streak tracking (consecutive days meeting your goal)
+- Statistics: average daily words, longest streak, estimated completion date
+- Last 7 days activity chart on dashboard
+
+**Export**
+- Plain text (.txt)
+- Markdown (.md)
+- Per-chapter or full book export
+
+**Other**
 - Dark mode
 - Bilingual interface (English / Bahasa Indonesia)
-- Responsive design for desktop and mobile
+- Responsive (desktop + mobile)
+- Full-text search across all book content
 
 ## Tech Stack
 
-- Backend: PHP 8.1+ / Laravel
-- Database: MySQL
-- Frontend: Vanilla JavaScript, Quill.js editor
-- AI: Multi-provider support via REST API (user provides their own key)
+- PHP 8.1+ / Laravel
+- MySQL
+- Vanilla JavaScript + Quill.js
+- Multi-provider AI via REST (no server-side AI costs — users bring their own key)
 
-## Setup
+## Getting Started
 
 ```bash
+git clone https://github.com/putraAlifSyah/MiWriter.git
+cd MiWriter
 composer install
 cp .env.example .env
 php artisan key:generate
+```
+
+Configure `.env` with your MySQL credentials, then:
+
+```bash
 php artisan migrate
 php artisan storage:link
 php artisan serve
 ```
 
-Configure your `.env` file with MySQL credentials before running migrations.
+Open http://127.0.0.1:8000, register an account, and start writing.
 
-After registering, go to Settings to configure your AI provider and API key.
+To enable AI: go to Settings > AI Assistant, select your provider, enter your model and API key.
+
+## Screenshots
+
+Dashboard with writing stats and book grid. AI chat accessible from the floating button on every page.
 
 ## License
 
