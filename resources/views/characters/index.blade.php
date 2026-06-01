@@ -42,7 +42,7 @@
                 <button type="button" onclick="GraphModule.closeModal()" style="background:none; border:none; cursor:pointer; font-size:24px; color:var(--color-text-muted);">&times;</button>
             </div>
         </div>
-        <div id="network-graph" style="flex:1; border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-bg-primary); min-height:500px;"></div>
+        <div id="network-graph" style="flex:1; border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-bg-primary); height:500px; position:relative; overflow:hidden;"></div>
     </div>
 </div>
 
@@ -175,6 +175,8 @@ const GraphModule = {
             const container = document.getElementById('network-graph');
             const graphData = { nodes, edges };
             const options = {
+                width: '100%',
+                height: '100%',
                 physics: { stabilization: false },
                 edges: { smooth: { type: 'continuous' }, length: 200 },
                 nodes: {
@@ -189,10 +191,11 @@ const GraphModule = {
 
             this.network = new vis.Network(container, graphData, options);
             
-            // Force redraw after a short delay to ensure images are fully loaded and centered
+            // Force redraw and fit after a short delay to ensure canvas is properly sized
             setTimeout(() => {
                 if (this.network) {
                     this.network.redraw();
+                    this.network.fit({ animation: true });
                 }
             }, 500);
         } catch(e) {
