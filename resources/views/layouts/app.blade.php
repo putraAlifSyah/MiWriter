@@ -11,12 +11,12 @@
             if (localStorage.getItem('theme') === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'dark');
             }
+            document.documentElement.setAttribute('data-lang', localStorage.getItem('miwriter-lang') || 'en');
         })();
     </script>
     @stack('styles')
 </head>
 <body>
-    <script>document.body.setAttribute('data-lang', localStorage.getItem('miwriter-lang') || 'en');</script>
     <div class="nwp-layout">
         <button class="nwp-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle navigation">☰</button>
 

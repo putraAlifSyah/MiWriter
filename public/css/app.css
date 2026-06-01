@@ -863,3 +863,28 @@ a:hover {
         grid-template-columns: 1fr;
     }
 }
+
+/* === Language Toggle === */
+.lang-en, .lang-id {
+    display: none !important;
+}
+
+[data-lang="en"] .lang-en {
+    display: block !important;
+}
+
+[data-lang="en"] span.lang-en,
+[data-lang="en"] a.lang-en,
+[data-lang="en"] div.lang-en {
+    display: block !important;
+}
+
+[data-lang="id"] .lang-id {
+    display: block !important;
+}
+
+[data-lang="id"] span.lang-id,
+[data-lang="id"] a.lang-id,
+[data-lang="id"] div.lang-id {
+    display: block !important;
+}

@@ -12,9 +12,6 @@
     .guide-toc { position: sticky; top: 20px; }
     .guide-toc a { display: block; padding: 6px 12px; font-size: var(--font-size-sm); color: var(--color-text-muted); border-radius: var(--radius-sm); transition: all var(--transition); }
     .guide-toc a:hover { background: var(--color-accent-light); color: var(--color-accent); }
-    .lang-en, .lang-id { display: none; }
-    [data-lang="en"] .lang-en { display: block; }
-    [data-lang="id"] .lang-id { display: block; }
     .lang-toggle { display: inline-flex; border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; }
     .lang-toggle button { padding: 6px 14px; font-size: var(--font-size-sm); font-weight: 500; border: none; background: transparent; cursor: pointer; color: var(--color-text-muted); transition: all var(--transition); font-family: var(--font-family); }
     .lang-toggle button.active { background: var(--color-accent); color: #fff; }
@@ -428,10 +425,13 @@
 @push('scripts')
 <script>
 function setLang(lang) {
-    document.body.setAttribute('data-lang', lang);
+    document.documentElement.setAttribute('data-lang', lang);
     localStorage.setItem('miwriter-lang', lang);
     document.getElementById('lang-btn-en').classList.toggle('active', lang === 'en');
     document.getElementById('lang-btn-id').classList.toggle('active', lang === 'id');
+    // Also update sidebar toggle
+    const sidebarBtn = document.getElementById('lang-toggle-sidebar');
+    if (sidebarBtn) sidebarBtn.textContent = lang.toUpperCase();
 }
 
 // Init language

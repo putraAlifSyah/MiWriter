@@ -5,7 +5,7 @@ function toggleLang() {
     const current = localStorage.getItem('miwriter-lang') || 'en';
     const next = current === 'en' ? 'id' : 'en';
     localStorage.setItem('miwriter-lang', next);
-    document.body.setAttribute('data-lang', next);
+    document.documentElement.setAttribute('data-lang', next);
     updateLangToggle(next);
 }
 
