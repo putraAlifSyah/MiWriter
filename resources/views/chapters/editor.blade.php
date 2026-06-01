@@ -199,13 +199,33 @@
 @push('scripts')
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
+const Inline = Quill.import('blots/inline');
+class CharacterHighlightBlot extends Inline {
+    static create(value) {
+        let node = super.create();
+        if (value && typeof value === 'string' && value.startsWith('#')) {
+            const r = parseInt(value.slice(1, 3), 16);
+            const g = parseInt(value.slice(3, 5), 16);
+            const b = parseInt(value.slice(5, 7), 16);
+            node.setAttribute('style', `background-color: rgba(${r}, ${g}, ${b}, 0.15); border-bottom: 2px solid rgba(${r}, ${g}, ${b}, 0.6); border-radius: 2px;`);
+            node.dataset.color = value;
+        }
+        return node;
+    }
+    static formats(node) {
+        return node.dataset.color;
+    }
+}
+CharacterHighlightBlot.blotName = 'charHighlight';
+CharacterHighlightBlot.tagName = 'span';
+CharacterHighlightBlot.className = 'nwp-char-highlight';
+Quill.register(CharacterHighlightBlot);
+
 const CharacterHighlightModule = {
     quill: null,
     patterns: [],
     regex: null,
     patternToColor: {},
-    outerLayer: null,
-    innerLayer: null,
     isActive: false,
     renderTimer: null,
     toggleBtn: null,
@@ -233,24 +253,10 @@ const CharacterHighlightModule = {
         
         this.regex = new RegExp(`\\b(${this.patterns.join('|')})\\b`, 'gi');
 
-        // Setup DOM
-        this.outerLayer = document.createElement('div');
-        this.outerLayer.style.cssText = 'position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 10; overflow: hidden;';
-        
-        this.innerLayer = document.createElement('div');
-        this.innerLayer.style.cssText = 'position: absolute; top: 0; left: 0; right: 0; height: 100%; transition: transform 0s;';
-        this.outerLayer.appendChild(this.innerLayer);
-        
-        this.quill.container.appendChild(this.outerLayer);
-
         // Events
-        this.quill.on('text-change', () => {
-            if (this.isActive) this.scheduleRender();
-        });
-        
-        this.quill.root.addEventListener('scroll', () => {
-            if (this.isActive) {
-                this.innerLayer.style.transform = `translateY(-${this.quill.root.scrollTop}px)`;
+        this.quill.on('text-change', (delta, oldDelta, source) => {
+            if (this.isActive && source === 'user') {
+                this.scheduleRender();
             }
         });
 
@@ -278,11 +284,10 @@ const CharacterHighlightModule = {
         this.isActive = !this.isActive;
         if (this.isActive) {
             this.toggleBtn.style.color = 'var(--color-accent)';
-            this.innerLayer.style.display = 'block';
             this.render();
         } else {
             this.toggleBtn.style.color = '';
-            this.innerLayer.style.display = 'none';
+            this.quill.formatText(0, this.quill.getLength(), 'charHighlight', false, 'silent');
         }
     },
 
@@ -292,42 +297,21 @@ const CharacterHighlightModule = {
     },
 
     render() {
-        this.innerLayer.innerHTML = '';
+        this.quill.formatText(0, this.quill.getLength(), 'charHighlight', false, 'silent');
         const text = this.quill.getText();
-        const scrollTop = this.quill.root.scrollTop;
         
         let match;
         this.regex.lastIndex = 0; // reset
-        const frag = document.createDocumentFragment();
         
         while ((match = this.regex.exec(text)) !== null) {
             const index = match.index;
             const length = match[0].length;
             const term = match[0].toLowerCase();
             const color = this.patternToColor[term];
+            const hex = color ? color.hex : '#6366f1';
             
-            try {
-                const bounds = this.quill.getBounds(index, length);
-                const box = document.createElement('div');
-                box.style.position = 'absolute';
-                box.style.left = bounds.left + 'px';
-                box.style.top = (bounds.top + scrollTop) + 'px';
-                box.style.width = bounds.width + 'px';
-                box.style.height = bounds.height + 'px';
-                if (color) {
-                    box.style.backgroundColor = color.bg;
-                    box.style.borderBottom = `2px solid ${color.border}`;
-                } else {
-                    box.style.backgroundColor = 'rgba(99, 102, 241, 0.15)'; 
-                    box.style.borderBottom = '2px solid rgba(99, 102, 241, 0.6)';
-                }
-                box.style.borderRadius = '2px';
-                frag.appendChild(box);
-            } catch (e) { }
+            this.quill.formatText(index, length, 'charHighlight', hex, 'silent');
         }
-        
-        this.innerLayer.appendChild(frag);
-        this.innerLayer.style.transform = `translateY(-${scrollTop}px)`;
     }
 };
 
@@ -356,13 +340,14 @@ const EditorModule = {
         });
 
         const allCharacters = [
-            @foreach($book->characters as $c)
+            @foreach($allCharacters as $c)
             @php
                 $aliasesArray = $c->aliases ? array_filter(array_map('trim', explode(',', $c->aliases))) : [];
             @endphp
             {
                 name: @json($c->name),
-                aliases: @json($aliasesArray)
+                aliases: @json($aliasesArray),
+                color: @json($c->color)
             },
             @endforeach
         ];
@@ -427,8 +412,26 @@ const EditorModule = {
         this.isSaving = true;
         this.setStatus('Saving...', 'saving');
 
-        const delta = this.quill.getContents();
-        const html = this.quill.root.innerHTML;
+        const rawDelta = this.quill.getContents();
+        const delta = JSON.parse(JSON.stringify(rawDelta));
+        if (delta.ops) {
+            delta.ops.forEach(op => {
+                if (op.attributes && op.attributes.charHighlight) {
+                    delete op.attributes.charHighlight;
+                    if (Object.keys(op.attributes).length === 0) {
+                        delete op.attributes;
+                    }
+                }
+            });
+        }
+
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = this.quill.root.innerHTML;
+        tempDiv.querySelectorAll('.nwp-char-highlight').forEach(el => {
+            const textNode = document.createTextNode(el.textContent);
+            el.parentNode.replaceChild(textNode, el);
+        });
+        const html = tempDiv.innerHTML;
 
         try {
             const response = await fetch(this.saveEndpoint, {
