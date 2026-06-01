@@ -54,13 +54,18 @@ Setup takes 30 seconds: go to Settings, pick a provider, paste your key, done.
 
 **Productivity & AI**
 - Daily and weekly writing targets
+- **Advanced Goal Tracker (NaNoWriMo Mode)**: Set a target word count and deadline for your book, track daily required pace.
 - Streak tracking and statistics (average daily words, completion date)
 - **Inline AI Editor**: Select text in the editor to instantly rewrite, expand, or fix grammar using AI
+- **AI Beta Reader & Continuity Checker**: Get professional AI feedback on your chapter's pacing, "show don't tell", and story continuity.
+- **AI Plot Framework Wizard**: Auto-generate story frameworks (Save The Cat, Hero's Journey, 3-Act) directly into your Kanban board.
 - Floating AI chat assistant available on every page
 
 **Export**
 - Plain text (.txt)
 - Markdown (.md)
+- **eBook (.epub)** for standard digital publishing
+- **PDF (.pdf)** for printing and sharing
 - Per-chapter or full book export
 
 **Other**

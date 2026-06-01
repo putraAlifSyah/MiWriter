@@ -138,6 +138,7 @@
                     <li><strong>Formatting</strong> — Bold, italic, underline, strikethrough, headings (H1-H3), blockquote, ordered/unordered lists</li>
                     <li><strong>Word count</strong> — Real-time word count displayed at the bottom</li>
                     <li><strong>Fullscreen mode</strong> — Click "Fullscreen" button for distraction-free writing</li>
+                    <li><strong>AI Beta Reader</strong> — Click "🤖 Beta Reader" to get AI feedback on pacing, show don't tell, and continuity.</li>
                     <li><strong>Offline protection</strong> — If save fails, content is backed up to browser storage and restored on next visit</li>
                 </ul>
             </div>
@@ -151,6 +152,7 @@
                     <li><strong>Formatting</strong> — Bold, italic, underline, strikethrough, heading (H1-H3), blockquote, ordered/unordered list</li>
                     <li><strong>Jumlah kata</strong> — Hitungan kata real-time ditampilkan di bawah</li>
                     <li><strong>Mode fullscreen</strong> — Klik tombol "Fullscreen" untuk menulis tanpa gangguan</li>
+                    <li><strong>AI Beta Reader</strong> — Klik "🤖 Beta Reader" untuk mendapat kritik AI tentang tempo (pacing), show don't tell, dan kontinuitas cerita.</li>
                     <li><strong>Proteksi offline</strong> — Jika gagal simpan, konten di-backup ke browser storage dan di-restore saat kunjungan berikutnya</li>
                 </ul>
             </div>
@@ -224,6 +226,8 @@
                     <li>Add a description to detail what happens</li>
                     <li>Plot points are automatically numbered in sequence</li>
                 </ul>
+                <h3>AI Plot Wizard</h3>
+                <p>Click "✨ AI Plot Wizard" to automatically generate a structured outline (Save The Cat, Hero's Journey, 3-Act) based on a short premise.</p>
                 <h3>Linking</h3>
                 <p>You can link up to 20 characters and 10 locations to each plot point (via API).</p>
             </div>
@@ -237,6 +241,8 @@
                     <li>Tambahkan deskripsi untuk menjelaskan apa yang terjadi</li>
                     <li>Plot point otomatis diberi nomor urut</li>
                 </ul>
+                <h3>AI Plot Wizard</h3>
+                <p>Klik "✨ AI Plot Wizard" untuk secara otomatis membuat kerangka terstruktur (Save The Cat, Hero's Journey, 3-Act) berdasarkan premis singkat.</p>
                 <h3>Menghubungkan</h3>
                 <p>Kamu bisa menghubungkan hingga 20 karakter dan 10 lokasi ke setiap plot point (via API).</p>
             </div>
@@ -281,7 +287,7 @@
                 <ul>
                     <li><strong>Daily target</strong> — Set a word count goal per day (1 - 100,000 words)</li>
                     <li><strong>Weekly target</strong> — Set a word count goal per week (1 - 500,000 words)</li>
-                    <li><strong>Book target</strong> — Set the total word count goal for your book (for estimated completion)</li>
+                    <li><strong>NaNoWriMo Mode (Project Goal)</strong> — Set a target word count and a strict deadline to track your required daily pace.</li>
                 </ul>
                 <h3>Stats Tracked</h3>
                 <ul>
@@ -298,7 +304,7 @@
                 <ul>
                     <li><strong>Target harian</strong> — Set target jumlah kata per hari (1 - 100.000 kata)</li>
                     <li><strong>Target mingguan</strong> — Set target jumlah kata per minggu (1 - 500.000 kata)</li>
-                    <li><strong>Target buku</strong> — Set target total kata untuk bukumu (untuk estimasi selesai)</li>
+                    <li><strong>NaNoWriMo Mode (Project Goal)</strong> — Set target total kata dan tenggat waktu (deadline) untuk melacak kecepatan harian yang dibutuhkan.</li>
                 </ul>
                 <h3>Statistik yang Dilacak</h3>
                 <ul>
@@ -318,6 +324,8 @@
                 <ul>
                     <li><strong>Plain Text (.txt)</strong> — All formatting stripped, just the text</li>
                     <li><strong>Markdown (.md)</strong> — Formatting converted to Markdown syntax (bold, italic, headings, lists)</li>
+                    <li><strong>eBook (.epub)</strong> — Standard industry format for digital publishing.</li>
+                    <li><strong>PDF (.pdf)</strong> — Beautifully rendered document ready for print.</li>
                 </ul>
                 <p>Access export from the book workspace via the "Export" button.</p>
             </div>
@@ -327,6 +335,8 @@
                 <ul>
                     <li><strong>Plain Text (.txt)</strong> — Semua format dihapus, hanya teks</li>
                     <li><strong>Markdown (.md)</strong> — Format dikonversi ke sintaks Markdown (bold, italic, heading, list)</li>
+                    <li><strong>eBook (.epub)</strong> — Format standar industri untuk penerbitan digital.</li>
+                    <li><strong>PDF (.pdf)</strong> — Dokumen yang di-render cantik dan siap cetak.</li>
                 </ul>
                 <p>Akses ekspor dari workspace buku via tombol "Export".</p>
             </div>
