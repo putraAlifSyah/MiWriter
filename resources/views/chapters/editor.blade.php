@@ -341,9 +341,12 @@ const EditorModule = {
 
         const allCharacters = [
             @foreach($book->characters as $c)
+            @php
+                $aliasesArray = $c->aliases ? array_filter(array_map('trim', explode(',', $c->aliases))) : [];
+            @endphp
             {
                 name: @json($c->name),
-                aliases: @json(array_filter(array_map('trim', explode(',', $c->aliases))))
+                aliases: @json($aliasesArray)
             },
             @endforeach
         ];
