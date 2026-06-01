@@ -193,6 +193,128 @@
 @push('scripts')
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
+const CharacterHighlightModule = {
+    quill: null,
+    patterns: [],
+    regex: null,
+    outerLayer: null,
+    innerLayer: null,
+    isActive: false,
+    renderTimer: null,
+    toggleBtn: null,
+
+    init(quill, characters) {
+        this.quill = quill;
+        
+        // Build regex array
+        this.patterns = [];
+        for (const c of characters) {
+            let terms = [c.name];
+            if (c.aliases) terms = terms.concat(c.aliases);
+            for (const t of terms) {
+                if (t && t.trim()) {
+                    const escaped = t.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                    this.patterns.push(escaped);
+                }
+            }
+        }
+        
+        this.patterns = [...new Set(this.patterns)].sort((a, b) => b.length - a.length);
+        if (this.patterns.length === 0) return;
+        
+        this.regex = new RegExp(`\\b(${this.patterns.join('|')})\\b`, 'gi');
+
+        // Setup DOM
+        this.outerLayer = document.createElement('div');
+        this.outerLayer.style.cssText = 'position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 10; overflow: hidden;';
+        
+        this.innerLayer = document.createElement('div');
+        this.innerLayer.style.cssText = 'position: absolute; top: 0; left: 0; right: 0; height: 100%; transition: transform 0s;';
+        this.outerLayer.appendChild(this.innerLayer);
+        
+        this.quill.container.appendChild(this.outerLayer);
+
+        // Events
+        this.quill.on('text-change', () => {
+            if (this.isActive) this.scheduleRender();
+        });
+        
+        this.quill.root.addEventListener('scroll', () => {
+            if (this.isActive) {
+                this.innerLayer.style.transform = `translateY(-${this.quill.root.scrollTop}px)`;
+            }
+        });
+
+        // Add toggle button to toolbar
+        const toolbar = this.quill.getModule('toolbar').container;
+        const btnGroup = document.createElement('span');
+        btnGroup.className = 'ql-formats';
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`;
+        btn.title = "Highlight Characters";
+        btn.style.width = '28px';
+        btn.style.height = '24px';
+        btn.style.padding = '3px';
+        btn.onclick = (e) => {
+            e.preventDefault();
+            this.toggle();
+        };
+        btnGroup.appendChild(btn);
+        toolbar.appendChild(btnGroup);
+        this.toggleBtn = btn;
+    },
+
+    toggle() {
+        this.isActive = !this.isActive;
+        if (this.isActive) {
+            this.toggleBtn.style.color = 'var(--color-accent)';
+            this.innerLayer.style.display = 'block';
+            this.render();
+        } else {
+            this.toggleBtn.style.color = '';
+            this.innerLayer.style.display = 'none';
+        }
+    },
+
+    scheduleRender() {
+        clearTimeout(this.renderTimer);
+        this.renderTimer = setTimeout(() => this.render(), 300);
+    },
+
+    render() {
+        this.innerLayer.innerHTML = '';
+        const text = this.quill.getText();
+        const scrollTop = this.quill.root.scrollTop;
+        
+        let match;
+        this.regex.lastIndex = 0; // reset
+        const frag = document.createDocumentFragment();
+        
+        while ((match = this.regex.exec(text)) !== null) {
+            const index = match.index;
+            const length = match[0].length;
+            
+            try {
+                const bounds = this.quill.getBounds(index, length);
+                const box = document.createElement('div');
+                box.style.position = 'absolute';
+                box.style.left = bounds.left + 'px';
+                box.style.top = (bounds.top + scrollTop) + 'px';
+                box.style.width = bounds.width + 'px';
+                box.style.height = bounds.height + 'px';
+                box.style.backgroundColor = 'rgba(99, 102, 241, 0.15)'; 
+                box.style.borderBottom = '2px solid rgba(99, 102, 241, 0.6)';
+                box.style.borderRadius = '2px';
+                frag.appendChild(box);
+            } catch (e) { }
+        }
+        
+        this.innerLayer.appendChild(frag);
+        this.innerLayer.style.transform = `translateY(-${scrollTop}px)`;
+    }
+};
+
 const EditorModule = {
     quill: null,
     chapterId: {{ $chapter->id }},
@@ -216,6 +338,16 @@ const EditorModule = {
                 history: { maxStack: 50 }
             }
         });
+
+        const allCharacters = [
+            @foreach($book->characters as $c)
+            {
+                name: @json($c->name),
+                aliases: @json(array_filter(array_map('trim', explode(',', $c->aliases))))
+            },
+            @endforeach
+        ];
+        CharacterHighlightModule.init(this.quill, allCharacters);
 
         // Auto-save 2 detik setelah berhenti mengetik
         this.quill.on('text-change', () => {
