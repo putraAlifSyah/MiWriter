@@ -176,10 +176,25 @@ const GraphModule = {
             const graphData = { nodes, edges };
             const options = {
                 physics: { stabilization: false },
-                edges: { smooth: { type: 'continuous' }, length: 200 }
+                edges: { smooth: { type: 'continuous' }, length: 200 },
+                nodes: {
+                    borderWidth: 2,
+                    size: 40,
+                    shapeProperties: {
+                        useBorderWithImage: true,
+                        useImageSize: false
+                    }
+                }
             };
 
             this.network = new vis.Network(container, graphData, options);
+            
+            // Force redraw after a short delay to ensure images are fully loaded and centered
+            setTimeout(() => {
+                if (this.network) {
+                    this.network.redraw();
+                }
+            }, 500);
         } catch(e) {
             console.error('Failed to load relationship graph.');
         }

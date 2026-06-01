@@ -39,22 +39,24 @@ Setup takes 30 seconds: go to Settings, pick a provider, paste your key, done.
 - Rich text editor (Quill.js) with bold, italic, headings, lists, blockquotes
 - Auto-save 2 seconds after you stop typing
 - Real-time word count
-- Fullscreen distraction-free mode
+- **Focus Mode**: Distraction-free writing mode that dims inactive paragraphs
+- **Chapter Snapshots**: Save and restore version history for every chapter
 - Offline backup to browser storage
 
 **Organization**
 - Multiple books with cover images
 - Chapters with drag-and-drop reordering
 - Character profiles with photo references
+- **Character Relationship Map**: Visual graph of character connections with optional AI Auto-Detect
 - Location builder with 5-level hierarchy
-- Plot timeline with act structure (Beginning / Middle / End)
+- **Plot Kanban Board**: Visual drag-and-drop board for your narrative arc (Act 1 / 2 / 3)
 - World-building entries grouped by category
 
-**Productivity**
+**Productivity & AI**
 - Daily and weekly writing targets
-- Streak tracking (consecutive days meeting your goal)
-- Statistics: average daily words, longest streak, estimated completion date
-- Last 7 days activity chart on dashboard
+- Streak tracking and statistics (average daily words, completion date)
+- **Inline AI Editor**: Select text in the editor to instantly rewrite, expand, or fix grammar using AI
+- Floating AI chat assistant available on every page
 
 **Export**
 - Plain text (.txt)
