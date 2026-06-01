@@ -41,22 +41,22 @@ class ChapterController extends Controller
                 $searchTerms = array_merge($searchTerms, array_filter(array_map('trim', explode(',', $char->aliases))));
             }
 
-            $isPresent = false;
+            $mentionCount = 0;
             foreach ($searchTerms as $term) {
                 if (empty($term)) continue;
                 $pattern = '/\b' . preg_quote($term, '/') . '\b/iu';
-                if (preg_match($pattern, $text)) {
-                    $isPresent = true;
-                    break;
-                }
+                $mentionCount += preg_match_all($pattern, $text);
             }
 
-            if ($isPresent) {
+            if ($mentionCount > 0) {
+                $char->mention_count = $mentionCount;
                 $charactersInChapter->push($char);
             } else {
                 $otherCharacters->push($char);
             }
         }
+        
+        $charactersInChapter = $charactersInChapter->sortByDesc('mention_count')->values();
         
         $user = auth()->user();
         $userHasAi = !empty($user->ai_api_key) && !empty($user->ai_provider);

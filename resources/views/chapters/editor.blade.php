@@ -148,8 +148,15 @@
                     <div style="font-weight:600; color:var(--color-accent); margin-bottom:8px; font-size:11px; text-transform:uppercase;">In This Chapter</div>
                     @foreach($charactersInChapter as $char)
                         <div style="margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--color-border-light);">
-                            <strong style="color:var(--color-text-primary);">{{ $char->name }}</strong> 
-                            <span class="nwp-text-muted" style="font-size:10px;">{{ $char->role ? (is_object($char->role) ? $char->role->label() : $char->role) : 'Unknown' }}</span>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <strong style="color:var(--color-text-primary);">{{ $char->name }}</strong> 
+                                    <span class="nwp-text-muted" style="font-size:10px;">{{ $char->role ? (is_object($char->role) ? $char->role->label() : $char->role) : 'Unknown' }}</span>
+                                </div>
+                                @if(isset($char->mention_count) && $char->mention_count > 0)
+                                    <span class="nwp-badge nwp-badge--muted" style="font-size:9px; padding:2px 6px;">{{ $char->mention_count }}x</span>
+                                @endif
+                            </div>
                             @if($char->personality_traits) <div style="font-size:11px; color:var(--color-text-muted); margin-top:4px;">{{ \Illuminate\Support\Str::limit($char->personality_traits, 70) }}</div> @endif
                         </div>
                     @endforeach
