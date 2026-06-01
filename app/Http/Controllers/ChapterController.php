@@ -35,7 +35,23 @@ class ChapterController extends Controller
         $charactersInChapter = collect();
         $otherCharacters = collect();
 
+        $colors = [
+            ['bg' => 'rgba(239, 68, 68, 0.15)', 'border' => 'rgba(239, 68, 68, 0.6)', 'hex' => '#ef4444'],
+            ['bg' => 'rgba(249, 115, 22, 0.15)', 'border' => 'rgba(249, 115, 22, 0.6)', 'hex' => '#f97316'],
+            ['bg' => 'rgba(234, 179, 8, 0.15)', 'border' => 'rgba(234, 179, 8, 0.6)', 'hex' => '#eab308'],
+            ['bg' => 'rgba(34, 197, 94, 0.15)', 'border' => 'rgba(34, 197, 94, 0.6)', 'hex' => '#22c55e'],
+            ['bg' => 'rgba(20, 184, 166, 0.15)', 'border' => 'rgba(20, 184, 166, 0.6)', 'hex' => '#14b8a6'],
+            ['bg' => 'rgba(59, 130, 246, 0.15)', 'border' => 'rgba(59, 130, 246, 0.6)', 'hex' => '#3b82f6'],
+            ['bg' => 'rgba(99, 102, 241, 0.15)', 'border' => 'rgba(99, 102, 241, 0.6)', 'hex' => '#6366f1'],
+            ['bg' => 'rgba(168, 85, 247, 0.15)', 'border' => 'rgba(168, 85, 247, 0.6)', 'hex' => '#a855f7'],
+            ['bg' => 'rgba(236, 72, 153, 0.15)', 'border' => 'rgba(236, 72, 153, 0.6)', 'hex' => '#ec4899']
+        ];
+        
+        $colorIndex = 0;
         foreach ($allCharacters as $char) {
+            $char->color = (object)$colors[$colorIndex % count($colors)];
+            $colorIndex++;
+
             $searchTerms = [$char->name];
             if ($char->aliases) {
                 $searchTerms = array_merge($searchTerms, array_filter(array_map('trim', explode(',', $char->aliases))));

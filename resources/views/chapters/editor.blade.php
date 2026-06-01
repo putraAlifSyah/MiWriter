@@ -150,7 +150,10 @@
                         <div style="margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--color-border-light);">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
                                 <div>
-                                    <strong style="color:var(--color-text-primary);">{{ $char->name }}</strong> 
+                                    <strong style="color:var(--color-text-primary);">
+                                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:{{ $char->color->hex ?? '#cbd5e1' }}; margin-right:4px;" title="Highlight Color"></span>
+                                        {{ $char->name }}
+                                    </strong> 
                                     <span class="nwp-text-muted" style="font-size:10px;">{{ $char->role ? (is_object($char->role) ? $char->role->label() : $char->role) : 'Unknown' }}</span>
                                 </div>
                                 @if(isset($char->mention_count) && $char->mention_count > 0)
@@ -166,7 +169,10 @@
                     <div style="font-weight:600; color:var(--color-text-muted); margin-bottom:8px; margin-top:16px; font-size:11px; text-transform:uppercase;">Other Characters</div>
                     @foreach($otherCharacters as $char)
                         <div style="margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--color-border-light); opacity:0.7;">
-                            <strong style="color:var(--color-text-primary);">{{ $char->name }}</strong> 
+                            <strong style="color:var(--color-text-primary);">
+                                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:{{ $char->color->hex ?? '#cbd5e1' }}; margin-right:4px;" title="Highlight Color"></span>
+                                {{ $char->name }}
+                            </strong> 
                             <span class="nwp-text-muted" style="font-size:10px;">{{ $char->role ? (is_object($char->role) ? $char->role->label() : $char->role) : 'Unknown' }}</span>
                             @if($char->personality_traits) <div style="font-size:11px; color:var(--color-text-muted); margin-top:4px;">{{ \Illuminate\Support\Str::limit($char->personality_traits, 70) }}</div> @endif
                         </div>
@@ -197,6 +203,7 @@ const CharacterHighlightModule = {
     quill: null,
     patterns: [],
     regex: null,
+    patternToColor: {},
     outerLayer: null,
     innerLayer: null,
     isActive: false,
@@ -206,15 +213,17 @@ const CharacterHighlightModule = {
     init(quill, characters) {
         this.quill = quill;
         
-        // Build regex array
         this.patterns = [];
+        this.patternToColor = {};
         for (const c of characters) {
             let terms = [c.name];
             if (c.aliases) terms = terms.concat(c.aliases);
             for (const t of terms) {
                 if (t && t.trim()) {
-                    const escaped = t.trim().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                    const cleanTerm = t.trim();
+                    const escaped = cleanTerm.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
                     this.patterns.push(escaped);
+                    this.patternToColor[cleanTerm.toLowerCase()] = c.color;
                 }
             }
         }
@@ -294,6 +303,8 @@ const CharacterHighlightModule = {
         while ((match = this.regex.exec(text)) !== null) {
             const index = match.index;
             const length = match[0].length;
+            const term = match[0].toLowerCase();
+            const color = this.patternToColor[term];
             
             try {
                 const bounds = this.quill.getBounds(index, length);
@@ -303,8 +314,13 @@ const CharacterHighlightModule = {
                 box.style.top = (bounds.top + scrollTop) + 'px';
                 box.style.width = bounds.width + 'px';
                 box.style.height = bounds.height + 'px';
-                box.style.backgroundColor = 'rgba(99, 102, 241, 0.15)'; 
-                box.style.borderBottom = '2px solid rgba(99, 102, 241, 0.6)';
+                if (color) {
+                    box.style.backgroundColor = color.bg;
+                    box.style.borderBottom = `2px solid ${color.border}`;
+                } else {
+                    box.style.backgroundColor = 'rgba(99, 102, 241, 0.15)'; 
+                    box.style.borderBottom = '2px solid rgba(99, 102, 241, 0.6)';
+                }
                 box.style.borderRadius = '2px';
                 frag.appendChild(box);
             } catch (e) { }
