@@ -11,6 +11,7 @@ use App\Http\Controllers\PlotController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\TrashController;
 use App\Http\Controllers\WorldElementController;
 use App\Http\Controllers\WritingTargetController;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +48,7 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
         Route::delete('chapters/{chapter}', [ChapterController::class, 'destroy'])->name('chapters.destroy');
 
         Route::post('chapters/{chapter}/beta-read', [\App\Http\Controllers\AiController::class, 'betaRead'])->name('chapters.beta-read');
+        Route::post('chapters/{chapter}/extract-characters', [\App\Http\Controllers\AiController::class, 'extractCharacters'])->name('chapters.extract-characters');
 
         Route::get('chapters/{chapter}/snapshots', [ChapterController::class, 'getSnapshots'])->name('chapters.snapshots.index');
         Route::post('chapters/{chapter}/snapshots', [ChapterController::class, 'saveSnapshot'])->name('chapters.snapshots.store');
@@ -134,4 +136,9 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
     Route::post('settings/avatar', [SettingsController::class, 'uploadAvatar'])->name('settings.avatar');
     Route::delete('settings/account', [SettingsController::class, 'deleteAccount'])->name('settings.account');
     Route::put('settings/preferences', [SettingsController::class, 'updatePreferences'])->name('settings.preferences');
+    
+    // Trash
+    Route::get('trash', [TrashController::class, 'index'])->name('trash.index');
+    Route::post('trash/{type}/{id}/restore', [TrashController::class, 'restore'])->name('trash.restore');
+    Route::delete('trash/{type}/{id}', [TrashController::class, 'forceDelete'])->name('trash.forceDelete');
 });

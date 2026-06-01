@@ -104,10 +104,13 @@
     @else
         <div id="chapter-list">
             @foreach($book->chapters as $chapter)
-                <div class="chapter-item" data-id="{{ $chapter->id }}" style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--color-border-light);">
-                    <a href="{{ route('chapters.show', [$book, $chapter]) }}" style="font-weight:500;">
-                        {{ $chapter->title }}
-                    </a>
+                <div class="chapter-item" data-id="{{ $chapter->id }}" style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--color-border-light); background: var(--color-bg-primary);">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <span class="drag-handle" style="cursor:grab; color:var(--color-text-muted); padding:4px;">☰</span>
+                        <a href="{{ route('chapters.show', [$book, $chapter]) }}" style="font-weight:500;">
+                            {{ $chapter->title }}
+                        </a>
+                    </div>
                     <span class="nwp-text-sm nwp-text-muted">{{ number_format($chapter->word_count) }} words</span>
                 </div>
             @endforeach
@@ -116,7 +119,32 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    var el = document.getElementById('chapter-list');
+    if (el) {
+        new Sortable(el, {
+            handle: '.drag-handle',
+            animation: 150,
+            onEnd: function (evt) {
+                const items = el.querySelectorAll('.chapter-item');
+                const order = Array.from(items).map(item => item.getAttribute('data-id'));
+                
+                fetch('{{ route("chapters.reorder", $book) }}', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ order: order })
+                }).catch(err => alert('Failed to reorder chapters.'));
+            }
+        });
+    }
+});
+
 function createChapter() {
     fetch('{{ route("chapters.store", $book) }}', {
         method: 'POST',

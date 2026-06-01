@@ -167,10 +167,13 @@
                 <ul>
                     <li>Go to the Characters tab in your book</li>
                     <li>Click "+ Add Character"</li>
-                    <li>Fill in: name (required), role (protagonist/antagonist/supporting/minor), physical description, personality, backstory, notes</li>
+                    <li>Fill in: name (required), aliases (nicknames), role, physical description, personality, backstory, notes</li>
                 </ul>
-                <h3>Character Photo</h3>
-                <p>Click the photo area on any character card to upload a reference image (JPEG/PNG/WebP, max 5MB).</p>
+                <h3>Character Statistics & Auto-Detect</h3>
+                <ul>
+                    <li><strong>Statistics</strong>: View how many times a character is mentioned (using their name or aliases) and in which chapters they appear on their detail page.</li>
+                    <li><strong>Auto-Detect</strong>: In the chapter editor, click "✨ Auto-Detect" in the side panel to let AI scan your text and automatically create profiles for any new characters you've written.</li>
+                </ul>
                 <h3>Search & Filter</h3>
                 <p>Use the search bar to find characters by name. Use the role dropdown to filter by character type.</p>
             </div>
@@ -181,10 +184,13 @@
                 <ul>
                     <li>Buka tab Characters di bukumu</li>
                     <li>Klik "+ Add Character"</li>
-                    <li>Isi: nama (wajib), peran (protagonist/antagonist/supporting/minor), deskripsi fisik, kepribadian, latar belakang, catatan</li>
+                    <li>Isi: nama (wajib), aliases (nama panggilan), peran, deskripsi fisik, kepribadian, latar belakang, catatan</li>
                 </ul>
-                <h3>Foto Karakter</h3>
-                <p>Klik area foto di kartu karakter untuk upload gambar referensi (JPEG/PNG/WebP, maks 5MB).</p>
+                <h3>Statistik Karakter & Auto-Detect</h3>
+                <ul>
+                    <li><strong>Statistik</strong>: Lihat berapa kali karakter disebut (menggunakan nama atau panggilannya) dan di bab mana saja mereka muncul pada halaman detail mereka.</li>
+                    <li><strong>Auto-Detect</strong>: Di editor bab, klik "✨ Auto-Detect" di panel samping agar AI memindai teksmu dan otomatis membuat profil untuk karakter baru yang kamu tulis.</li>
+                </ul>
                 <h3>Cari & Filter</h3>
                 <p>Gunakan kolom pencarian untuk mencari karakter berdasarkan nama. Gunakan dropdown peran untuk filter berdasarkan tipe.</p>
             </div>

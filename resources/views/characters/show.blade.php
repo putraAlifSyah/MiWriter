@@ -9,6 +9,33 @@
 </div>
 
 <div class="nwp-card" style="margin-bottom:24px;">
+    <h3 class="nwp-heading" style="margin-bottom:16px;">📊 Character Statistics</h3>
+    <div style="display:flex; flex-direction:column; gap:16px;">
+        <div style="font-size:var(--font-size-lg);">
+            <strong>Total Mentions:</strong> <span class="nwp-badge" style="background:var(--color-accent); color:var(--color-bg-primary);">{{ number_format($totalMentions) }}</span>
+        </div>
+        
+        <div>
+            <h4 style="font-size:var(--font-size-base); font-weight:600; margin-bottom:8px;">Appears in Chapters:</h4>
+            @if(empty($mentionedInChapters))
+                <p class="nwp-text-muted">This character hasn't appeared in any chapters yet.</p>
+            @else
+                <ul style="list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:8px;">
+                    @foreach($mentionedInChapters as $mention)
+                        <li style="padding:12px; background:var(--color-bg-secondary); border-radius:var(--radius-md); border:1px solid var(--color-border-light); display:flex; justify-content:space-between; align-items:center;">
+                            <a href="{{ route('chapters.show', [$book, $mention['chapter']]) }}" style="color:var(--color-text-primary); text-decoration:none; font-weight:500;">
+                                {{ $mention['chapter']->title }}
+                            </a>
+                            <span class="nwp-text-sm nwp-text-muted">{{ $mention['count'] }} mentions</span>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    </div>
+</div>
+
+<div class="nwp-card" style="margin-bottom:24px;">
     <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap;">
         <!-- Character Image -->
         <div style="flex-shrink:0;">
@@ -40,6 +67,11 @@
                             @endforeach
                         </select>
                     </div>
+                </div>
+
+                <div class="nwp-form-group">
+                    <label class="nwp-label">Aliases / Nicknames (comma separated)</label>
+                    <input type="text" name="aliases" class="nwp-input" value="{{ $character->aliases }}" maxlength="200" placeholder="e.g. Miu, Yui">
                 </div>
 
                 <div class="nwp-form-group">

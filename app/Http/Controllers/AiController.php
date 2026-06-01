@@ -109,6 +109,22 @@ class AiController extends Controller
         }
     }
 
+    public function extractCharacters(Request $request, Book $book, \App\Models\Chapter $chapter): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($book->user_id !== $user->id || $chapter->book_id !== $book->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $createdCount = $this->aiService->extractCharacters($user, $book, $chapter);
+            return response()->json(['success' => true, 'created' => $createdCount]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
     public function aiWizard(Request $request, Book $book): JsonResponse
     {
         $user = $request->user();

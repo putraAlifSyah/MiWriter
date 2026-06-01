@@ -113,9 +113,12 @@
             
             <div class="kanban-dropzone" style="flex:1; display:flex; flex-direction:column; gap:12px; min-height:100px;">
                 @foreach($plotPoints->where('act.value', $actKey) as $point)
-                <div class="nwp-card kanban-card" draggable="true" data-id="{{ $point->id }}" id="plot-{{ $point->id }}" style="border-left:4px solid {{ $point->color_label ?: $actInfo['color'] }}; cursor:grab; margin:0; padding:12px;">
+                <div class="nwp-card kanban-card" data-id="{{ $point->id }}" data-status="{{ $point->status->value }}" id="plot-{{ $point->id }}" style="border-left:4px solid {{ $point->color_label ?: $actInfo['color'] }}; margin:0; padding:12px;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                        <h4 style="margin:0; font-weight:600; font-size:var(--font-size-sm); line-height:1.4;">{{ $point->title }}</h4>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <span class="drag-handle" style="cursor:grab; color:var(--color-text-muted);">☰</span>
+                            <h4 style="margin:0; font-weight:600; font-size:var(--font-size-sm); line-height:1.4;">{{ $point->title }}</h4>
+                        </div>
                         <button onclick="deletePlotPoint({{ $point->id }})" style="background:none; border:none; cursor:pointer; color:var(--color-text-muted); padding:4px;">&times;</button>
                     </div>
                     @if($point->description)
@@ -136,62 +139,55 @@
 @endif
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
-let draggedItem = null;
-
-document.querySelectorAll('.kanban-card').forEach(card => {
-    card.addEventListener('dragstart', function(e) {
-        draggedItem = this;
-        setTimeout(() => this.style.opacity = '0.5', 0);
-    });
-    
-    card.addEventListener('dragend', function(e) {
-        setTimeout(() => this.style.opacity = '1', 0);
-        draggedItem = null;
-    });
-});
-
-document.querySelectorAll('.kanban-column').forEach(column => {
-    column.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        this.style.background = 'var(--color-bg-tertiary)';
-    });
-    
-    column.addEventListener('dragleave', function(e) {
-        this.style.background = 'var(--color-bg-secondary)';
-    });
-    
-    column.addEventListener('drop', function(e) {
-        e.preventDefault();
-        this.style.background = 'var(--color-bg-secondary)';
-        
-        if (draggedItem) {
-            const dropzone = this.querySelector('.kanban-dropzone');
-            dropzone.appendChild(draggedItem);
-            
-            const plotId = draggedItem.dataset.id;
-            const newAct = this.dataset.act;
-            
-            // Assume status stays the same, we only update act. For simplicity, just send status: planned.
-            // Actually, we need the existing status. It's stored in the UI but maybe we can just pass what we know.
-            // It's better to fetch the status or assume it remains the same.
-            updatePlotPosition(plotId, newAct);
-        }
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.kanban-dropzone').forEach(function(el) {
+        new Sortable(el, {
+            group: 'kanban',
+            handle: '.drag-handle',
+            animation: 150,
+            ghostClass: 'kanban-ghost',
+            onEnd: function(evt) {
+                const item = evt.item;
+                const plotId = item.getAttribute('data-id');
+                const currentStatus = item.getAttribute('data-status');
+                const newAct = evt.to.closest('.kanban-column').getAttribute('data-act');
+                const oldAct = evt.from.closest('.kanban-column').getAttribute('data-act');
+                
+                // If it moved to a different act
+                if (newAct !== oldAct) {
+                    fetch(`/books/{{ $book->id }}/plot/${plotId}/move`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({ act: newAct, status: currentStatus })
+                    }).then(() => reorderPlotPoints()).catch(() => alert('Failed to move.'));
+                } else {
+                    // Just reordered in the same act
+                    reorderPlotPoints();
+                }
+            }
+        });
     });
 });
 
-function updatePlotPosition(id, act) {
-    // Note: status might change in reality, we just send 'in_progress' or keep it 'planned' for now.
-    // To make it perfect we should read the existing status. Let's just use 'planned' as default if not known.
-    fetch(`/books/{{ $book->id }}/plot/${id}/move`, {
+function reorderPlotPoints() {
+    const allItems = document.querySelectorAll('.kanban-card');
+    const order = Array.from(allItems).map(item => item.getAttribute('data-id'));
+    
+    fetch('{{ route("plot.reorder", $book) }}', {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json',
+            'Accept': 'application/json'
         },
-        body: JSON.stringify({ act: act, status: 'planned' })
-    }).catch(() => NotificationModule.error('Failed to move plot point.'));
+        body: JSON.stringify({ order: order })
+    }).catch(err => alert('Failed to reorder plot points.'));
 }
 document.getElementById('plot-form').addEventListener('submit', function(e) {
     e.preventDefault();

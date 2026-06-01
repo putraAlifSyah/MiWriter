@@ -56,6 +56,10 @@
                 <input type="text" name="name" class="nwp-input" maxlength="100" required>
             </div>
             <div class="nwp-form-group">
+                <label class="nwp-label">Aliases (comma separated)</label>
+                <input type="text" name="aliases" class="nwp-input" maxlength="200" placeholder="e.g. Miu, Yui">
+            </div>
+            <div class="nwp-form-group">
                 <label class="nwp-label">Role</label>
                 <select name="role" class="nwp-select" required>
                     @foreach(\App\Enums\CharacterRole::cases() as $role)

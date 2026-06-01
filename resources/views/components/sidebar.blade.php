@@ -21,6 +21,11 @@
                     New Book
                 </a>
             </li>
+            <li class="nwp-sidebar__nav-item">
+                <a href="{{ route('trash.index') }}" class="nwp-sidebar__nav-link {{ request()->routeIs('trash.*') ? 'nwp-sidebar__nav-link--active' : '' }}">
+                    Trash
+                </a>
+            </li>
         </ul>
 
         <div style="padding:16px 8px 6px 20px; font-size:10px; font-weight:600; color:var(--color-text-muted); letter-spacing:0.05em; text-transform:uppercase;">Account</div>

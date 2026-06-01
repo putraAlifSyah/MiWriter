@@ -28,7 +28,37 @@ class ChapterController extends Controller
 
     public function show(Book $book, Chapter $chapter): View
     {
-        return view('chapters.editor', compact('book', 'chapter'));
+        $plotPoints = $book->plotPoints()->orderBy('position')->get();
+        $allCharacters = $book->characters()->get();
+        
+        $text = strip_tags($chapter->content_html ?? '');
+        $charactersInChapter = collect();
+        $otherCharacters = collect();
+
+        foreach ($allCharacters as $char) {
+            $searchTerms = [$char->name];
+            if ($char->aliases) {
+                $searchTerms = array_merge($searchTerms, array_filter(array_map('trim', explode(',', $char->aliases))));
+            }
+
+            $isPresent = false;
+            foreach ($searchTerms as $term) {
+                if (empty($term)) continue;
+                $pattern = '/\b' . preg_quote($term, '/') . '\b/iu';
+                if (preg_match($pattern, $text)) {
+                    $isPresent = true;
+                    break;
+                }
+            }
+
+            if ($isPresent) {
+                $charactersInChapter->push($char);
+            } else {
+                $otherCharacters->push($char);
+            }
+        }
+        
+        return view('chapters.editor', compact('book', 'chapter', 'plotPoints', 'charactersInChapter', 'otherCharacters'));
     }
 
     public function update(Request $request, Book $book, Chapter $chapter): JsonResponse

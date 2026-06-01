@@ -37,13 +37,44 @@ class CharacterController extends Controller
         // Ensure character belongs to the book
         abort_if($character->book_id !== $book->id, 404);
 
-        return view('characters.show', compact('book', 'character'));
+        $chapters = $book->chapters()->orderBy('order_number')->get();
+        $searchTerms = [$character->name];
+        if ($character->aliases) {
+            $aliases = array_map('trim', explode(',', $character->aliases));
+            $searchTerms = array_merge($searchTerms, array_filter($aliases));
+        }
+
+        $totalMentions = 0;
+        $mentionedInChapters = [];
+
+        foreach ($chapters as $chapter) {
+            $text = strip_tags($chapter->content_html ?? '');
+            $chapterMentions = 0;
+            foreach ($searchTerms as $term) {
+                if (empty($term)) continue;
+                // Case-insensitive count of whole word or partial?
+                // Using regex for whole word boundary is safer
+                $pattern = '/\b' . preg_quote($term, '/') . '\b/iu';
+                $chapterMentions += preg_match_all($pattern, $text);
+            }
+
+            if ($chapterMentions > 0) {
+                $totalMentions += $chapterMentions;
+                $mentionedInChapters[] = [
+                    'chapter' => $chapter,
+                    'count' => $chapterMentions
+                ];
+            }
+        }
+
+        return view('characters.show', compact('book', 'character', 'totalMentions', 'mentionedInChapters'));
     }
 
     public function store(Request $request, Book $book): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
+            'aliases' => 'nullable|string|max:200',
             'role' => 'required|in:protagonist,antagonist,supporting,minor',
             'physical_description' => 'nullable|string|max:2000',
             'personality_traits' => 'nullable|string|max:2000',
@@ -64,6 +95,7 @@ class CharacterController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100',
+            'aliases' => 'nullable|string|max:200',
             'role' => 'required|in:protagonist,antagonist,supporting,minor',
             'physical_description' => 'nullable|string|max:2000',
             'personality_traits' => 'nullable|string|max:2000',

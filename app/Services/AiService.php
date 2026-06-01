@@ -281,8 +281,11 @@ PROMPT;
             if ($characters->isNotEmpty()) {
                 $prompt .= "\n--- CHARACTERS ---\n";
                 foreach ($characters as $char) {
-                    $prompt .= "- [ID: {$char->id}] {$char->name} ({$char->role->value})";
+                    $prompt .= "- [ID: {$char->id}] {$char->name}";
+                    if ($char->aliases) $prompt .= " (Aliases: {$char->aliases})";
+                    $prompt .= " - Role: {$char->role->value}";
                     if ($char->physical_description) $prompt .= " | Look: " . mb_substr($char->physical_description, 0, 100);
+                    if ($char->personality_traits) $prompt .= " | Personality: " . mb_substr($char->personality_traits, 0, 200);
                     if ($char->backstory) $prompt .= " | Backstory: " . mb_substr($char->backstory, 0, 200);
                     $prompt .= "\n";
                 }
@@ -543,8 +546,9 @@ PROMPT;
 
         $systemPrompt = $this->buildSystemPrompt($user, $book, false);
         $systemPrompt .= "\n\nYou are a professional fiction beta reader and editor. The user will provide the text of a chapter titled '{$chapter->title}'. ";
-        $systemPrompt .= "You must analyze the chapter and provide critique in three specific areas: Pacing, Show Don't Tell, and Continuity/Consistency. ";
-        $systemPrompt .= "Return ONLY a JSON object with keys: 'pacing', 'show_dont_tell', and 'continuity'. Each key should contain a string with your detailed feedback. Do not include markdown formatting like ```json or any explanations outside the JSON.";
+        $systemPrompt .= "You must analyze the chapter and provide critique in specific areas: Pacing, Show Don't Tell, Continuity, and Character Consistency. ";
+        $systemPrompt .= "For 'Character Consistency', evaluate if the characters' actions and dialogues in this chapter match their established personality traits and roles from the context. ";
+        $systemPrompt .= "Return ONLY a JSON object with keys: 'pacing', 'show_dont_tell', 'continuity', and 'character_consistency'. Each key should contain a string with your detailed feedback. Do not include markdown formatting like ```json or any explanations outside the JSON.";
 
         $message = "Please beta-read the following chapter text:\n\n" . $text;
 
@@ -562,6 +566,58 @@ PROMPT;
         }
 
         return $decoded;
+    }
+
+    public function extractCharacters(User $user, Book $book, Chapter $chapter): int
+    {
+        $provider = $user->ai_provider;
+        $model = $user->ai_model;
+        $apiKey = $user->ai_api_key;
+
+        if (!$provider || !$model || !$apiKey) {
+            throw new \Exception('AI not configured.');
+        }
+
+        $systemPrompt = $this->buildSystemPrompt($user, $book, false);
+        $systemPrompt .= "\n\nYou are an AI assistant that extracts NEW characters from a chapter. ";
+        $systemPrompt .= "The user will provide the text of the chapter. Compare the characters mentioned in the text with the existing characters list from the context. ";
+        $systemPrompt .= "If you find any important named characters in the text that DO NOT exist in the context yet, output them. ";
+        $systemPrompt .= "Return ONLY a valid JSON array of objects. Each object MUST have these keys: 'name' (string), 'role' (string: 'supporting' or 'minor'), 'physical_description' (string, inferred from text or empty), and 'personality_traits' (string, inferred from text or empty). ";
+        $systemPrompt .= "If no new characters are found, return an empty array `[]`. Do NOT include markdown like ```json or any other text.";
+
+        $message = "Here is the chapter text. Extract any NEW characters not in the current character list:\n\n" . strip_tags($chapter->content_html ?? '');
+
+        $rawResponse = $this->callProvider($provider, $apiKey, $model, $systemPrompt, $message);
+
+        $response = trim($rawResponse);
+        if (str_starts_with($response, '```')) {
+            $response = preg_replace('/^```(?:json)?\s*/', '', $response);
+            $response = preg_replace('/\s*```$/', '', $response);
+        }
+
+        $decoded = json_decode($response, true);
+        if (!is_array($decoded)) {
+            throw new \Exception('Invalid JSON from AI.');
+        }
+
+        $createdCount = 0;
+        foreach ($decoded as $charData) {
+            if (empty($charData['name'])) continue;
+            
+            // Double check if name already exists (case-insensitive) to prevent duplicates
+            $exists = $book->characters()->whereRaw('LOWER(name) = ?', [strtolower($charData['name'])])->exists();
+            if (!$exists) {
+                $book->characters()->create([
+                    'name' => mb_substr($charData['name'], 0, 100),
+                    'role' => in_array($charData['role'] ?? '', ['supporting', 'minor']) ? $charData['role'] : 'supporting',
+                    'physical_description' => mb_substr($charData['physical_description'] ?? '', 0, 2000),
+                    'personality_traits' => mb_substr($charData['personality_traits'] ?? '', 0, 2000),
+                ]);
+                $createdCount++;
+            }
+        }
+
+        return $createdCount;
     }
 
     public function aiWizard(User $user, Book $book, string $premise, string $framework): array

@@ -25,19 +25,31 @@
     body.focus-mode-active .ql-editor { font-size: 18px; line-height: 1.8; padding-bottom: 50vh; }
     body.focus-mode-active .ql-editor > * { color: var(--color-text-muted); transition: color 0.3s; }
     body.focus-mode-active .ql-editor > *.focus-active { color: var(--color-text-primary); }
+
+    .editor-layout { display: flex; gap: 16px; align-items: flex-start; position: relative; }
+    .editor-main { flex: 1; min-width: 0; }
+    .editor-sidebar { width: 300px; display: none; flex-direction: column; gap: 16px; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; }
+    .editor-sidebar.active { display: flex; }
 </style>
 @endpush
 
 @section('content')
 <div class="focus-hidden" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-    <div>
+    <div style="flex:1;">
         <a href="{{ route('books.show', $book) }}" class="nwp-text-sm">&larr; Back to {{ $book->title }}</a>
-        <h1 class="nwp-heading nwp-mt-1">{{ $chapter->title }}</h1>
+        <div style="display:flex; align-items:center; gap:8px;" class="nwp-mt-1">
+            <input type="text" id="chapter-title-input" value="{{ $chapter->title }}" class="nwp-heading" style="border:none; background:transparent; font-size:var(--font-size-2xl); font-weight:700; color:var(--color-text-primary); flex:1; outline:none;" onblur="EditorModule.updateTitle(this.value)">
+            <form method="POST" action="{{ route('chapters.destroy', [$book, $chapter]) }}" onsubmit="return confirm('Hapus bab ini? (Bisa dikembalikan dari Trash)')" style="margin:0;">
+                @csrf @method('DELETE')
+                <button type="submit" class="nwp-btn nwp-btn--sm nwp-btn--danger" style="padding:4px 8px; font-size:12px;" title="Delete Chapter">🗑️</button>
+            </form>
+        </div>
     </div>
     <div style="display:flex; gap:8px; align-items:center;">
         <span id="save-status" class="nwp-text-sm nwp-text-muted"></span>
         <button onclick="BetaReaderModule.openModal()" class="nwp-btn nwp-btn--sm nwp-btn--primary" style="background:var(--color-accent);">🤖 Beta Reader</button>
         <button onclick="SnapshotModule.openModal()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Snapshots</button>
+        <button onclick="EditorModule.toggleSidebar()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Panel</button>
         <button onclick="EditorModule.toggleFocusMode()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Focus</button>
         <button onclick="EditorModule.toggleFullscreen()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Fullscreen</button>
     </div>
@@ -62,7 +74,7 @@
         </div>
         
         <div style="margin-bottom:16px;">
-            <p class="nwp-text-sm nwp-text-muted">AI akan membaca bab ini dan memberikan kritik mengenai Pacing, aturan "Show Don't Tell", serta mendeteksi masalah kontinuitas cerita.</p>
+            <p class="nwp-text-sm nwp-text-muted">AI akan membaca bab ini dan memberikan kritik mengenai Pacing, aturan "Show Don't Tell", masalah kontinuitas, dan konsistensi karakter.</p>
             <button id="btn-run-beta-reader" onclick="BetaReaderModule.run()" class="nwp-btn nwp-btn--primary nwp-mt-2" style="background:var(--color-accent);">Mulai Analisis</button>
         </div>
 
@@ -78,6 +90,10 @@
             <div>
                 <h4 style="color:var(--color-accent); margin-bottom:8px;">🔗 Continuity & Consistency</h4>
                 <div id="br-continuity" class="nwp-text-sm" style="line-height:1.6;"></div>
+            </div>
+            <div>
+                <h4 style="color:var(--color-accent); margin-bottom:8px;">👤 Character Consistency</h4>
+                <div id="br-character-consistency" class="nwp-text-sm" style="line-height:1.6;"></div>
             </div>
         </div>
         <div id="beta-reader-loading" class="nwp-text-sm nwp-text-muted" style="display:none; text-align:center; padding:32px;">
@@ -106,11 +122,64 @@
     </div>
 </div>
 
-<div id="editor-container" class="nwp-editor-container">
-    <div id="editor">{!! $chapter->content_html !!}</div>
-    <div class="nwp-editor__footer">
-        <span id="word-count">{{ number_format($chapter->word_count) }} words</span>
-        <span id="last-saved" class="nwp-text-sm nwp-text-muted"></span>
+<div class="editor-layout">
+    <div class="editor-main">
+        <div id="editor-container" class="nwp-editor-container">
+            <div id="editor">{!! $chapter->content_html !!}</div>
+            <div class="nwp-editor__footer">
+                <span id="word-count">{{ number_format($chapter->word_count) }} words</span>
+                <span id="last-saved" class="nwp-text-sm nwp-text-muted"></span>
+            </div>
+        </div>
+    </div>
+    
+    <div id="editor-sidebar" class="editor-sidebar focus-hidden">
+        <div class="nwp-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 class="nwp-heading" style="font-size:var(--font-size-base); margin:0;">🎭 Characters</h3>
+                <button onclick="AutoExtractModule.run()" id="btn-auto-extract" class="nwp-btn nwp-btn--sm nwp-btn--primary" style="background:var(--color-accent); font-size:10px; padding:2px 6px;" title="Auto-detect new characters in this chapter">✨ Auto-Detect</button>
+            </div>
+            <div style="max-height:250px; overflow-y:auto; font-size:var(--font-size-sm); padding-right:4px;">
+                @if($charactersInChapter->isEmpty() && $otherCharacters->isEmpty())
+                    <span class="nwp-text-muted">No characters.</span> 
+                @endif
+                
+                @if($charactersInChapter->isNotEmpty())
+                    <div style="font-weight:600; color:var(--color-accent); margin-bottom:8px; font-size:11px; text-transform:uppercase;">In This Chapter</div>
+                    @foreach($charactersInChapter as $char)
+                        <div style="margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--color-border-light);">
+                            <strong style="color:var(--color-text-primary);">{{ $char->name }}</strong> 
+                            <span class="nwp-text-muted" style="font-size:10px;">{{ $char->role ? (is_object($char->role) ? $char->role->label() : $char->role) : 'Unknown' }}</span>
+                            @if($char->personality_traits) <div style="font-size:11px; color:var(--color-text-muted); margin-top:4px;">{{ \Illuminate\Support\Str::limit($char->personality_traits, 70) }}</div> @endif
+                        </div>
+                    @endforeach
+                @endif
+
+                @if($otherCharacters->isNotEmpty())
+                    <div style="font-weight:600; color:var(--color-text-muted); margin-bottom:8px; margin-top:16px; font-size:11px; text-transform:uppercase;">Other Characters</div>
+                    @foreach($otherCharacters as $char)
+                        <div style="margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--color-border-light); opacity:0.7;">
+                            <strong style="color:var(--color-text-primary);">{{ $char->name }}</strong> 
+                            <span class="nwp-text-muted" style="font-size:10px;">{{ $char->role ? (is_object($char->role) ? $char->role->label() : $char->role) : 'Unknown' }}</span>
+                            @if($char->personality_traits) <div style="font-size:11px; color:var(--color-text-muted); margin-top:4px;">{{ \Illuminate\Support\Str::limit($char->personality_traits, 70) }}</div> @endif
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+        </div>
+        <div class="nwp-card">
+            <h3 class="nwp-heading" style="font-size:var(--font-size-base); margin-bottom:12px;">🗺️ Plot Outline</h3>
+            <div style="max-height:300px; overflow-y:auto; font-size:var(--font-size-sm); padding-right:4px;">
+                @if($plotPoints->isEmpty()) <span class="nwp-text-muted">No plot points.</span> @endif
+                @foreach($plotPoints as $plot)
+                    <div style="margin-bottom:12px; border-left:3px solid {{ $plot->color_label ?: 'var(--color-accent)' }}; padding-left:8px;">
+                        <strong style="color:var(--color-text-primary);">{{ $plot->title }}</strong>
+                        <div style="font-size:10px; color:var(--color-text-muted); text-transform:uppercase; margin:2px 0;">{{ $plot->act }} &bull; {{ $plot->status->label() }}</div>
+                        @if($plot->description) <div style="font-size:11px; color:var(--color-text-muted);">{{ \Illuminate\Support\Str::limit($plot->description, 100) }}</div> @endif
+                    </div>
+                @endforeach
+            </div>
+        </div>
     </div>
 </div>
 
@@ -247,6 +316,25 @@ const EditorModule = {
 
     toggleFullscreen() {
         document.getElementById('editor-container').classList.toggle('fullscreen');
+    },
+
+    toggleSidebar() {
+        document.getElementById('editor-sidebar').classList.toggle('active');
+    },
+
+    updateTitle(title) {
+        if (!title.trim()) return;
+        fetch('{{ route("chapters.update", [$book, $chapter]) }}', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ title: title })
+        }).then(res => {
+            if (res.ok) this.setStatus('✓ Title saved', 'saved');
+        }).catch(err => this.setStatus('✗ Title failed', 'error'));
     },
 
     toggleFocusMode() {
@@ -463,8 +551,44 @@ const InlineAiModule = {
     }
 };
 
+const AutoExtractModule = {
+    async run() {
+        if (!confirm('AI will read this chapter and create any NEW characters that are not in your list yet. This might take a moment and consume AI tokens. Continue?')) return;
+        
+        const btn = document.getElementById('btn-auto-extract');
+        const originalText = btn.textContent;
+        btn.textContent = 'Scanning...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('{{ route("chapters.extract-characters", [$book, $chapter]) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            });
+            const data = await res.json();
+            
+            if (!res.ok) throw new Error(data.error || 'Failed to extract characters');
+            
+            if (data.created > 0) {
+                alert(`Successfully created ${data.created} new characters! The page will now reload.`);
+                window.location.reload();
+            } else {
+                alert('No new characters were found in this chapter.');
+            }
+        } catch (e) {
+            alert('Error: ' + e.message);
+        } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+    }
+};
+
 const BetaReaderModule = {
-    modal: null,
     chapterId: {{ $chapter->id }},
     bookId: {{ $book->id }},
 
@@ -507,7 +631,8 @@ const BetaReaderModule = {
             document.getElementById('br-pacing').innerHTML = data.pacing.replace(/\n/g, '<br>');
             document.getElementById('br-showdonttell').innerHTML = data.show_dont_tell.replace(/\n/g, '<br>');
             document.getElementById('br-continuity').innerHTML = data.continuity.replace(/\n/g, '<br>');
-
+            document.getElementById('br-character-consistency').innerHTML = data.character_consistency ? data.character_consistency.replace(/\n/g, '<br>') : 'N/A';
+            
             document.getElementById('beta-reader-loading').style.display = 'none';
             document.getElementById('beta-reader-content').style.display = 'flex';
         } catch(e) {
