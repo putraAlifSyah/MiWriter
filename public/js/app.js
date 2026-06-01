@@ -1,5 +1,19 @@
 // Novel Writing Platform - Main JavaScript
 
+// Language Toggle
+function toggleLang() {
+    const current = localStorage.getItem('miwriter-lang') || 'en';
+    const next = current === 'en' ? 'id' : 'en';
+    localStorage.setItem('miwriter-lang', next);
+    document.body.setAttribute('data-lang', next);
+    updateLangToggle(next);
+}
+
+function updateLangToggle(lang) {
+    const btn = document.getElementById('lang-toggle-sidebar');
+    if (btn) btn.textContent = lang.toUpperCase();
+}
+
 // Dark Mode
 function toggleDarkMode() {
     const html = document.documentElement;
@@ -36,6 +50,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update toggle button state
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     updateThemeToggle(isDark);
+
+    // Update lang toggle
+    const lang = localStorage.getItem('miwriter-lang') || 'en';
+    updateLangToggle(lang);
 
     const toggle = document.getElementById('sidebar-toggle');
     const sidebar = document.getElementById('sidebar');

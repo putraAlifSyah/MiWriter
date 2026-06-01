@@ -26,6 +26,11 @@
         <div style="padding:16px 8px 6px 20px; font-size:10px; font-weight:600; color:var(--color-text-muted); letter-spacing:0.05em; text-transform:uppercase;">Account</div>
         <ul class="nwp-sidebar__nav">
             <li class="nwp-sidebar__nav-item">
+                <a href="{{ route('guide') }}" class="nwp-sidebar__nav-link {{ request()->routeIs('guide') ? 'nwp-sidebar__nav-link--active' : '' }}">
+                    Guide
+                </a>
+            </li>
+            <li class="nwp-sidebar__nav-item">
                 <a href="{{ route('settings') }}" class="nwp-sidebar__nav-link {{ request()->routeIs('settings*') ? 'nwp-sidebar__nav-link--active' : '' }}">
                     Settings
                 </a>
@@ -36,7 +41,10 @@
     <div style="padding: 12px 12px 0; border-top: 1px solid var(--color-border-light); margin-top:auto;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
             <span class="nwp-text-sm" style="font-weight:500; color:var(--color-text-secondary);">{{ Auth::user()->name }}</span>
-            <button class="nwp-theme-toggle" id="theme-toggle" onclick="toggleDarkMode()" title="Toggle theme">🌙</button>
+            <div style="display:flex; gap:4px;">
+                <button class="nwp-theme-toggle" id="lang-toggle-sidebar" onclick="toggleLang()" title="Toggle language" style="font-size:12px; width:32px; height:32px;">EN</button>
+                <button class="nwp-theme-toggle" id="theme-toggle" onclick="toggleDarkMode()" title="Toggle theme" style="width:32px; height:32px;">🌙</button>
+            </div>
         </div>
         <form method="POST" action="{{ route('logout') }}">
             @csrf

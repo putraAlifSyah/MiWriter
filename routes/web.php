@@ -104,6 +104,9 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
 
     // Settings
     Route::get('settings', [SettingsController::class, 'show'])->name('settings');
+
+    // Guide
+    Route::get('guide', [\App\Http\Controllers\GuideController::class, 'index'])->name('guide');
     Route::put('settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile');
     Route::put('settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
     Route::post('settings/avatar', [SettingsController::class, 'uploadAvatar'])->name('settings.avatar');
