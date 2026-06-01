@@ -138,6 +138,7 @@
                     <li><strong>Formatting</strong> — Bold, italic, underline, strikethrough, headings (H1-H3), blockquote, ordered/unordered lists</li>
                     <li><strong>Word count</strong> — Real-time word count displayed at the bottom</li>
                     <li><strong>Fullscreen mode</strong> — Click "Fullscreen" button for distraction-free writing</li>
+                    <li><strong>Character Highlights</strong> — Click the pen icon in the toolbar to automatically color-code characters based on their appearances in the chapter.</li>
                     <li><strong>AI Beta Reader</strong> — Click "🤖 Beta Reader" to get AI feedback on pacing, show don't tell, and continuity.</li>
                     <li><strong>Offline protection</strong> — If save fails, content is backed up to browser storage and restored on next visit</li>
                 </ul>
@@ -152,6 +153,7 @@
                     <li><strong>Formatting</strong> — Bold, italic, underline, strikethrough, heading (H1-H3), blockquote, ordered/unordered list</li>
                     <li><strong>Jumlah kata</strong> — Hitungan kata real-time ditampilkan di bawah</li>
                     <li><strong>Mode fullscreen</strong> — Klik tombol "Fullscreen" untuk menulis tanpa gangguan</li>
+                    <li><strong>Character Highlights</strong> — Klik ikon pena pada toolbar untuk secara otomatis menyorot (memberi aksen warna) nama karakter yang muncul di bab tersebut dengan warna-warna unik.</li>
                     <li><strong>AI Beta Reader</strong> — Klik "🤖 Beta Reader" untuk mendapat kritik AI tentang tempo (pacing), show don't tell, dan kontinuitas cerita.</li>
                     <li><strong>Proteksi offline</strong> — Jika gagal simpan, konten di-backup ke browser storage dan di-restore saat kunjungan berikutnya</li>
                 </ul>
@@ -171,7 +173,7 @@
                 </ul>
                 <h3>Character Statistics & Auto-Detect</h3>
                 <ul>
-                    <li><strong>Statistics</strong>: View how many times a character is mentioned (using their name or aliases) and in which chapters they appear on their detail page.</li>
+                    <li><strong>Statistics & Highlights</strong>: View how many times a character is mentioned (using their name or aliases) and in which chapters they appear on their detail page. In the chapter editor, characters are sorted by mention count and you can toggle color highlights to visualize them.</li>
                     <li><strong>Auto-Detect</strong>: In the chapter editor, click "✨ Auto-Detect" in the side panel to let AI scan your text and automatically create profiles for any new characters you've written.</li>
                 </ul>
                 <h3>Search & Filter</h3>
@@ -188,7 +190,7 @@
                 </ul>
                 <h3>Statistik Karakter & Auto-Detect</h3>
                 <ul>
-                    <li><strong>Statistik</strong>: Lihat berapa kali karakter disebut (menggunakan nama atau panggilannya) dan di bab mana saja mereka muncul pada halaman detail mereka.</li>
+                    <li><strong>Statistik & Highlight</strong>: Lihat berapa kali karakter disebut (menggunakan nama atau panggilannya) dan di bab mana saja mereka muncul pada halaman detail mereka. Di editor bab, karakter diurutkan berdasarkan jumlah sebutan dan kamu dapat menyalakan highlight warna untuk memvisualisasikannya.</li>
                     <li><strong>Auto-Detect</strong>: Di editor bab, klik "✨ Auto-Detect" di panel samping agar AI memindai teksmu dan otomatis membuat profil untuk karakter baru yang kamu tulis.</li>
                 </ul>
                 <h3>Cari & Filter</h3>

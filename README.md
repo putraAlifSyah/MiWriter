@@ -46,7 +46,7 @@ Setup takes 30 seconds: go to Settings, pick a provider, paste your key, done.
 **Organization**
 - Multiple books with cover images
 - Chapters with drag-and-drop reordering
-- 👥 **Advanced Character Management**: Track character roles, relationships, personality traits, and aliases. View automatic character statistics (mentions per chapter) and auto-extract new characters from your text using AI.
+- 👥 **Advanced Character Management**: Track character roles, relationships, personality traits, and aliases. View automatic character statistics (mentions per chapter), toggle **Colorful Character Highlights** in the editor to instantly spot mentions, and auto-extract new characters from your text using AI.
 - **Character Relationship Map**: Visual graph of character connections with optional AI Auto-Detect
 - Location builder with 5-level hierarchy
 - **Plot Kanban Board**: Visual drag-and-drop board for your narrative arc (Act 1 / 2 / 3)
