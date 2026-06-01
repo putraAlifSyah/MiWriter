@@ -102,4 +102,16 @@ class PlotController extends Controller
 
         return response()->json(['message' => 'Plot points reordered.']);
     }
+
+    public function move(Request $request, Book $book, PlotPoint $plotPoint): JsonResponse
+    {
+        $validated = $request->validate([
+            'act' => 'required|in:beginning,middle,end',
+            'status' => 'required|in:planned,in_progress,completed',
+        ]);
+
+        $plotPoint->update($validated);
+
+        return response()->json(['message' => 'Plot point moved.']);
+    }
 }

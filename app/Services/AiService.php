@@ -281,7 +281,7 @@ PROMPT;
             if ($characters->isNotEmpty()) {
                 $prompt .= "\n--- CHARACTERS ---\n";
                 foreach ($characters as $char) {
-                    $prompt .= "- {$char->name} ({$char->role->value})";
+                    $prompt .= "- [ID: {$char->id}] {$char->name} ({$char->role->value})";
                     if ($char->physical_description) $prompt .= " | Look: " . mb_substr($char->physical_description, 0, 100);
                     if ($char->backstory) $prompt .= " | Backstory: " . mb_substr($char->backstory, 0, 200);
                     $prompt .= "\n";
@@ -473,5 +473,61 @@ PROMPT;
             'content' => $content,
             'metadata' => $metadata,
         ]);
+    }
+
+    public function generateCharacterRelationships(User $user, Book $book): array
+    {
+        $provider = $user->ai_provider;
+        $model = $user->ai_model;
+        $apiKey = $user->ai_api_key;
+
+        if (!$provider || !$model || !$apiKey) {
+            throw new \Exception('AI not configured.');
+        }
+
+        $systemPrompt = $this->buildSystemPrompt($user, $book, true);
+        $systemPrompt .= "\n\nYou are a system that analyzes the provided book chapters and characters to determine relationships between characters. Output ONLY a valid JSON array containing objects with keys: 'character_one_id' (int), 'character_two_id' (int), 'type' (string, e.g., 'Friends', 'Enemies', 'Lovers', 'Siblings', 'Allies'). Do not include any explanations, markdown tags, or other text outside the JSON array.";
+
+        $message = "Please analyze the story and characters, and output the relationships JSON array based on the IDs provided in the context.";
+
+        $rawResponse = $this->callProvider($provider, $apiKey, $model, $systemPrompt, $message);
+
+        // Try to parse JSON
+        $response = trim($rawResponse);
+        if (str_starts_with($response, '```')) {
+            $response = preg_replace('/^```(?:json)?\s*/', '', $response);
+            $response = preg_replace('/\s*```$/', '', $response);
+        }
+
+        $decoded = json_decode($response, true);
+        if (!$decoded || !is_array($decoded)) {
+            throw new \Exception('Invalid JSON from AI.');
+        }
+
+        return $decoded;
+    }
+
+    public function inlineEdit(User $user, string $text, string $instruction, ?Book $book): string
+    {
+        $provider = $user->ai_provider;
+        $model = $user->ai_model;
+        $apiKey = $user->ai_api_key;
+
+        if (!$provider || !$model || !$apiKey) {
+            throw new \Exception('AI not configured.');
+        }
+
+        $systemPrompt = "You are a professional fiction editor. Your task is to modify the given text according to the user's instructions (e.g. rewrite, expand, fix grammar, change tone).\n";
+        $systemPrompt .= "OUTPUT ONLY THE MODIFIED TEXT. Do not include explanations, greetings, or markdown formatting around the text. Do not output anything other than the exact replacement text.";
+
+        if ($book) {
+            $systemPrompt .= "\nContext: The text belongs to a novel titled '{$book->title}'. Maintain the tone of the story.";
+        }
+
+        $message = "Instruction: {$instruction}\n\nText to edit:\n{$text}";
+
+        $response = $this->callProvider($provider, $apiKey, $model, $systemPrompt, $message);
+
+        return trim($response);
     }
 }

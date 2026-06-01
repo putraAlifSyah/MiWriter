@@ -107,4 +107,35 @@ class CharacterController extends Controller
         $map = $this->characterService->getRelationshipMap($book);
         return response()->json($map);
     }
+
+    public function generateAiRelationships(Request $request, Book $book, \App\Services\AiService $aiService): JsonResponse
+    {
+        try {
+            $relationships = $aiService->generateCharacterRelationships($request->user(), $book);
+            
+            // Delete old relationships
+            \App\Models\CharacterRelationship::whereIn('character_one_id', $book->characters()->pluck('id'))
+                ->orWhereIn('character_two_id', $book->characters()->pluck('id'))
+                ->delete();
+
+            // Insert new ones
+            foreach ($relationships as $rel) {
+                // Ensure characters exist and belong to this book
+                $c1 = $book->characters()->find($rel['character_one_id']);
+                $c2 = $book->characters()->find($rel['character_two_id']);
+                
+                if ($c1 && $c2 && $c1->id !== $c2->id) {
+                    \App\Models\CharacterRelationship::create([
+                        'character_one_id' => $c1->id,
+                        'character_two_id' => $c2->id,
+                        'relationship_type' => $rel['type'],
+                    ]);
+                }
+            }
+
+            return response()->json(['message' => 'Relationships generated.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }

@@ -28,7 +28,22 @@
             @endforeach
         </select>
     </form>
+    <button onclick="GraphModule.openModal()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Relationship Map</button>
     <button onclick="document.getElementById('create-form').style.display='block'" class="nwp-btn nwp-btn--sm">+ Add Character</button>
+</div>
+
+<!-- Graph Modal -->
+<div id="graph-modal" class="nwp-modal-overlay" style="z-index:90000;">
+    <div class="nwp-modal" style="max-width:90vw; width:1000px; max-height:90vh; display:flex; flex-direction:column; padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 class="nwp-modal__title" style="margin:0;">Character Relationships</h3>
+            <div style="display:flex; gap:8px;">
+                <button onclick="GraphModule.generateWithAI()" class="nwp-btn nwp-btn--sm nwp-btn--primary" style="background:var(--color-accent);">✨ AI Auto-Detect</button>
+                <button type="button" onclick="GraphModule.closeModal()" style="background:none; border:none; cursor:pointer; font-size:24px; color:var(--color-text-muted);">&times;</button>
+            </div>
+        </div>
+        <div id="network-graph" style="flex:1; border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-bg-primary); min-height:500px;"></div>
+    </div>
 </div>
 
 <!-- Create Form (hidden by default) -->
@@ -119,7 +134,78 @@
 @endif
 
 @push('scripts')
+<script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 <script>
+const GraphModule = {
+    modal: null,
+    network: null,
+    
+    openModal() {
+        this.modal = document.getElementById('graph-modal');
+        this.modal.classList.add('nwp-modal-overlay--active');
+        this.loadGraph();
+    },
+
+    closeModal() {
+        if(this.modal) this.modal.classList.remove('nwp-modal-overlay--active');
+    },
+
+    async loadGraph() {
+        try {
+            const res = await fetch('{{ route("characters.relationships", $book) }}');
+            const data = await res.json();
+            
+            const nodes = new vis.DataSet(data.characters.map(c => ({
+                id: c.id,
+                label: c.name,
+                shape: c.image_url ? 'circularImage' : 'dot',
+                image: c.image_url || undefined,
+                color: { background: '#1c1c28', border: '#818cf8' },
+                font: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#fff' : '#000' }
+            })));
+
+            const edges = new vis.DataSet(data.relationships.map(r => ({
+                from: r.character_one_id,
+                to: r.character_two_id,
+                label: r.type,
+                font: { align: 'middle', color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#b8b8cc' : '#666' },
+                color: { color: '#4b5563' }
+            })));
+
+            const container = document.getElementById('network-graph');
+            const graphData = { nodes, edges };
+            const options = {
+                physics: { stabilization: false },
+                edges: { smooth: { type: 'continuous' }, length: 200 }
+            };
+
+            this.network = new vis.Network(container, graphData, options);
+        } catch(e) {
+            console.error('Failed to load relationship graph.');
+        }
+    },
+    
+    async generateWithAI() {
+        if(!confirm('AI akan menganalisis semua karakter dan bab untuk menemukan hubungan antar karakter secara otomatis. Ini mungkin memakan waktu beberapa saat dan menghabiskan token. Lanjutkan?')) return;
+        
+        NotificationModule.info('AI sedang menganalisis hubungan...');
+        try {
+            const res = await fetch('/books/{{ $book->id }}/characters/ai-relationships', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            });
+            if(!res.ok) throw new Error();
+            NotificationModule.success('Hubungan berhasil diperbarui oleh AI!');
+            this.loadGraph();
+        } catch(e) {
+            NotificationModule.error('Gagal memproses AI.');
+        }
+    }
+};
+
 document.getElementById('character-form').addEventListener('submit', function(e) {
     e.preventDefault();
     const formData = new FormData(this);
@@ -145,7 +231,6 @@ function uploadCharacterImage(characterId, input) {
     const file = input.files[0];
     if (!file) return;
 
-    // Client-side validation
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
         alert('Only JPEG, PNG, or WebP images are allowed.');
         return;
@@ -168,7 +253,6 @@ function uploadCharacterImage(characterId, input) {
     })
     .then(r => { if (!r.ok) throw r; return r.json(); })
     .then(data => {
-        // Update the image preview
         const container = document.querySelector(`#character-${characterId} .character-image-container`);
         const img = container.querySelector('img');
         if (img) {

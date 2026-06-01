@@ -64,6 +64,31 @@ class AiController extends Controller
         }
     }
 
+    public function inline(Request $request): JsonResponse
+    {
+        $request->validate([
+            'text' => 'required|string|max:5000',
+            'instruction' => 'required|string|max:200',
+            'book_id' => 'nullable|integer|exists:books,id',
+        ]);
+
+        $user = $request->user();
+        $book = null;
+
+        if ($request->book_id) {
+            $book = Book::where('id', $request->book_id)
+                ->where('user_id', $user->id)
+                ->first();
+        }
+
+        try {
+            $result = $this->aiService->inlineEdit($user, $request->text, $request->instruction, $book);
+            return response()->json(['result' => $result]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
     /**
      * Get recent AI chat history (max 20 messages).
      */

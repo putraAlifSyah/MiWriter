@@ -9,18 +9,65 @@
     #save-status.saving { color: var(--color-accent); }
     #save-status.saved { color: var(--color-success); }
     #save-status.error { color: var(--color-danger); }
+
+    /* Focus Mode Styles */
+    body.focus-mode-active { background: var(--color-bg-primary); }
+    body.focus-mode-active .nwp-sidebar,
+    body.focus-mode-active .nwp-editor__footer,
+    body.focus-mode-active .ai-widget,
+    body.focus-mode-active > div:not(.nwp-main) { display: none !important; }
+    
+    body.focus-mode-active .nwp-main { margin-left: 0 !important; max-width: 800px; margin: 0 auto; padding-top: 60px; }
+    
+    body.focus-mode-active .focus-hidden { opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    body.focus-mode-active:hover .focus-hidden { opacity: 1; pointer-events: auto; }
+    
+    body.focus-mode-active .ql-editor { font-size: 18px; line-height: 1.8; padding-bottom: 50vh; }
+    body.focus-mode-active .ql-editor p { color: var(--color-text-muted); transition: color 0.3s; }
+    body.focus-mode-active .ql-editor p.focus-active { color: var(--color-text-primary); }
 </style>
 @endpush
 
 @section('content')
-<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+<div class="focus-hidden" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
     <div>
         <a href="{{ route('books.show', $book) }}" class="nwp-text-sm">&larr; Back to {{ $book->title }}</a>
         <h1 class="nwp-heading nwp-mt-1">{{ $chapter->title }}</h1>
     </div>
     <div style="display:flex; gap:8px; align-items:center;">
         <span id="save-status" class="nwp-text-sm nwp-text-muted"></span>
+        <button onclick="SnapshotModule.openModal()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Snapshots</button>
+        <button onclick="EditorModule.toggleFocusMode()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Focus</button>
         <button onclick="EditorModule.toggleFullscreen()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Fullscreen</button>
+    </div>
+</div>
+
+<!-- Inline AI Toolbar -->
+<div id="inline-ai-toolbar" style="display:none; position:absolute; z-index:100; background:var(--color-bg-secondary); border:1px solid var(--color-border); border-radius:var(--radius-md); box-shadow:0 4px 12px rgba(0,0,0,0.1); padding:4px; display:flex; gap:4px;">
+    <button onclick="InlineAiModule.edit('rewrite')" class="nwp-btn nwp-btn--sm nwp-btn--ghost" style="font-size:11px; padding:4px 8px;">Rewrite</button>
+    <button onclick="InlineAiModule.edit('expand')" class="nwp-btn nwp-btn--sm nwp-btn--ghost" style="font-size:11px; padding:4px 8px;">Expand</button>
+    <button onclick="InlineAiModule.edit('grammar')" class="nwp-btn nwp-btn--sm nwp-btn--ghost" style="font-size:11px; padding:4px 8px;">Grammar</button>
+    <div style="width:1px; background:var(--color-border); margin:4px 0;"></div>
+    <input type="text" id="inline-ai-custom" placeholder="Custom prompt..." class="nwp-input nwp-input--sm" style="width:120px; font-size:11px; padding:2px 6px; border:none; background:var(--color-bg-primary);">
+    <button onclick="InlineAiModule.customEdit()" class="nwp-btn nwp-btn--sm nwp-btn--primary" style="font-size:11px; padding:4px 8px;">Go</button>
+</div>
+
+<!-- Snapshot Modal -->
+<div id="snapshot-modal" class="nwp-modal-overlay" style="z-index:90000;">
+    <div class="nwp-modal" style="max-width:500px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 class="nwp-modal__title" style="margin:0;">Version History</h3>
+            <button type="button" onclick="SnapshotModule.closeModal()" style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--color-text-muted);">&times;</button>
+        </div>
+        
+        <div style="margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+            <span class="nwp-text-sm nwp-text-muted">Save the current state before making major changes.</span>
+            <button onclick="SnapshotModule.saveSnapshot()" class="nwp-btn nwp-btn--sm nwp-btn--primary">Save Snapshot</button>
+        </div>
+
+        <div id="snapshot-list" style="max-height:300px; overflow-y:auto; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:8px; display:flex; flex-direction:column; gap:8px;">
+            <div class="nwp-text-sm nwp-text-muted" style="text-align:center; padding:16px;">Loading snapshots...</div>
+        </div>
     </div>
 </div>
 
@@ -160,10 +207,206 @@ const EditorModule = {
 
     toggleFullscreen() {
         document.getElementById('editor-container').classList.toggle('fullscreen');
+    },
+
+    toggleFocusMode() {
+        document.body.classList.toggle('focus-mode-active');
+        if (document.body.classList.contains('focus-mode-active')) {
+            NotificationModule.info('Focus Mode Enabled. Move mouse to top to see menu.');
+            this.setupFocusTracking();
+        }
+    },
+
+    setupFocusTracking() {
+        this.quill.on('selection-change', (range) => {
+            if (range && document.body.classList.contains('focus-mode-active')) {
+                const [line, offset] = this.quill.getLine(range.index);
+                document.querySelectorAll('.ql-editor p').forEach(p => p.classList.remove('focus-active'));
+                if (line && line.domNode) {
+                    line.domNode.classList.add('focus-active');
+                    // Scroll line to center roughly
+                    const bounds = this.quill.getBounds(range.index);
+                    if (bounds) {
+                        const editorNode = document.querySelector('.ql-editor');
+                        editorNode.scrollTop = bounds.top - (window.innerHeight / 2) + 100;
+                    }
+                }
+            }
+        });
     }
 };
 
-document.addEventListener('DOMContentLoaded', () => EditorModule.init());
+const SnapshotModule = {
+    modal: null,
+    chapterId: {{ $chapter->id }},
+    bookId: {{ $book->id }},
+    
+    openModal() {
+        this.modal = document.getElementById('snapshot-modal');
+        this.modal.classList.add('nwp-modal-overlay--active');
+        this.loadSnapshots();
+    },
+
+    closeModal() {
+        if(this.modal) this.modal.classList.remove('nwp-modal-overlay--active');
+    },
+
+    async loadSnapshots() {
+        const container = document.getElementById('snapshot-list');
+        container.innerHTML = '<div class="nwp-text-sm nwp-text-muted" style="text-align:center; padding:16px;">Loading...</div>';
+
+        try {
+            const res = await fetch(`/books/${this.bookId}/chapters/${this.chapterId}/snapshots`);
+            const data = await res.json();
+            
+            if (data.snapshots.length === 0) {
+                container.innerHTML = '<div class="nwp-text-sm nwp-text-muted" style="text-align:center; padding:16px;">No snapshots saved yet.</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            data.snapshots.forEach(snap => {
+                const date = new Date(snap.created_at).toLocaleString();
+                const div = document.createElement('div');
+                div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--color-bg-secondary); border-radius:var(--radius-sm);';
+                div.innerHTML = `
+                    <span class="nwp-text-sm" style="font-weight:500;">Snapshot: ${date}</span>
+                    <button onclick="SnapshotModule.restoreSnapshot(${snap.id})" class="nwp-btn nwp-btn--sm nwp-btn--secondary" style="color:var(--color-accent); border-color:var(--color-accent);">Restore</button>
+                `;
+                container.appendChild(div);
+            });
+        } catch(e) {
+            container.innerHTML = '<div class="nwp-text-sm nwp-text-danger" style="text-align:center; padding:16px;">Failed to load.</div>';
+        }
+    },
+
+    async saveSnapshot() {
+        if (!confirm('Save a snapshot of the current content?')) return;
+
+        try {
+            // make sure content is saved first
+            await EditorModule.save();
+
+            const res = await fetch(`/books/${this.bookId}/chapters/${this.chapterId}/snapshots`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            });
+            if (!res.ok) throw new Error();
+            NotificationModule.success('Snapshot saved successfully!');
+            this.loadSnapshots();
+        } catch(e) {
+            NotificationModule.error('Failed to save snapshot.');
+        }
+    },
+
+    async restoreSnapshot(id) {
+        if (!confirm('Warning: This will overwrite your current unsaved content with the snapshot. Are you sure?')) return;
+
+        try {
+            const res = await fetch(`/books/${this.bookId}/chapters/${this.chapterId}/snapshots/${id}/restore`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            
+            EditorModule.quill.setContents(data.chapter.content_delta || []);
+            NotificationModule.success('Snapshot restored!');
+            this.closeModal();
+            EditorModule.isDirty = false;
+        } catch(e) {
+            NotificationModule.error('Failed to restore snapshot.');
+        }
+    }
+};
+
+const InlineAiModule = {
+    toolbar: document.getElementById('inline-ai-toolbar'),
+    currentRange: null,
+
+    init() {
+        // Only run after EditorModule is initialized
+        setTimeout(() => {
+            EditorModule.quill.on('selection-change', (range) => {
+                if (range && range.length > 0) {
+                    this.currentRange = range;
+                    const bounds = EditorModule.quill.getBounds(range.index, range.length);
+                    const editorContainer = document.querySelector('#editor-container');
+                    const editorRect = editorContainer.getBoundingClientRect();
+                    
+                    // Position toolbar above the selection
+                    this.toolbar.style.display = 'flex';
+                    // Note: quill getBounds returns coordinates relative to the editor container
+                    this.toolbar.style.left = (bounds.left + editorRect.left) + 'px';
+                    this.toolbar.style.top = (bounds.top + editorRect.top - 40) + 'px';
+                } else {
+                    // We don't hide immediately because the user might be clicking a button inside the toolbar
+                    // Hide logic is handled by document click listener
+                }
+            });
+
+            document.addEventListener('mousedown', (e) => {
+                if (this.toolbar.style.display !== 'none' && !this.toolbar.contains(e.target) && !e.target.closest('.ql-editor')) {
+                    this.toolbar.style.display = 'none';
+                }
+            });
+        }, 100);
+    },
+
+    async edit(instruction) {
+        if (!this.currentRange) return;
+        const text = EditorModule.quill.getText(this.currentRange.index, this.currentRange.length);
+        if (!text.trim()) return;
+
+        this.toolbar.style.display = 'none';
+        NotificationModule.info('AI is editing...');
+
+        try {
+            const res = await fetch('/ai/inline', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: text,
+                    instruction: instruction,
+                    book_id: {{ $book->id }}
+                })
+            });
+
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            
+            // Replace text
+            EditorModule.quill.deleteText(this.currentRange.index, this.currentRange.length);
+            EditorModule.quill.insertText(this.currentRange.index, data.result);
+            NotificationModule.success('Done!');
+        } catch(e) {
+            NotificationModule.error('Failed to run AI.');
+        }
+    },
+
+    customEdit() {
+        const val = document.getElementById('inline-ai-custom').value;
+        if(val) {
+            this.edit(val);
+            document.getElementById('inline-ai-custom').value = '';
+        }
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    EditorModule.init();
+    InlineAiModule.init();
+});
 </script>
 @endpush
 @endsection

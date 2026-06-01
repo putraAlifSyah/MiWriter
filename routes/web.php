@@ -45,6 +45,10 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
         Route::put('chapters/{chapter}', [ChapterController::class, 'update'])->name('chapters.update');
         Route::put('chapters/{chapter}/content', [ChapterController::class, 'saveContent'])->name('chapters.content');
         Route::delete('chapters/{chapter}', [ChapterController::class, 'destroy'])->name('chapters.destroy');
+
+        Route::get('chapters/{chapter}/snapshots', [ChapterController::class, 'getSnapshots'])->name('chapters.snapshots.index');
+        Route::post('chapters/{chapter}/snapshots', [ChapterController::class, 'saveSnapshot'])->name('chapters.snapshots.store');
+        Route::post('chapters/{chapter}/snapshots/{snapshot}/restore', [ChapterController::class, 'restoreSnapshot'])->name('chapters.snapshots.restore');
     });
 
     // Characters
@@ -56,6 +60,7 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
         Route::put('characters/{character}', [CharacterController::class, 'update'])->name('characters.update');
         Route::delete('characters/{character}', [CharacterController::class, 'destroy'])->name('characters.destroy');
         Route::post('characters/{character}/image', [CharacterController::class, 'uploadImage'])->name('characters.image');
+        Route::post('characters/ai-relationships', [CharacterController::class, 'generateAiRelationships'])->name('characters.ai-relationships');
     });
 
     // Locations
@@ -74,6 +79,7 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
         Route::post('plot', [PlotController::class, 'store'])->name('plot.store');
         Route::put('plot/reorder', [PlotController::class, 'reorder'])->name('plot.reorder');
         Route::put('plot/{plotPoint}', [PlotController::class, 'update'])->name('plot.update');
+        Route::put('plot/{plotPoint}/move', [PlotController::class, 'move'])->name('plot.move');
         Route::delete('plot/{plotPoint}', [PlotController::class, 'destroy'])->name('plot.destroy');
     });
 
@@ -108,6 +114,7 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
 
     // AI
     Route::post('ai/ask', [\App\Http\Controllers\AiController::class, 'ask'])->name('ai.ask');
+    Route::post('ai/inline', [\App\Http\Controllers\AiController::class, 'inline'])->name('ai.inline');
     Route::get('ai/history', [\App\Http\Controllers\AiController::class, 'getHistory'])->name('ai.history');
     Route::delete('ai/history', [\App\Http\Controllers\AiController::class, 'clearHistory'])->name('ai.history.clear');
     Route::post('ai/settings', [\App\Http\Controllers\AiController::class, 'updateSettings'])->name('ai.settings');

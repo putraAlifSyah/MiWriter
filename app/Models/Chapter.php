@@ -32,4 +32,9 @@ class Chapter extends Model
     {
         return $this->belongsTo(Book::class);
     }
+
+    public function snapshots()
+    {
+        return $this->hasMany(ChapterSnapshot::class)->orderByDesc('created_at');
+    }
 }

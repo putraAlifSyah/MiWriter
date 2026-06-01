@@ -71,6 +71,7 @@ class CharacterService
                 'id' => $c->id,
                 'name' => $c->name,
                 'role' => $c->role->value,
+                'image_url' => $c->image_path ? asset('storage/' . $c->image_path) : null,
             ])->toArray(),
             'relationships' => $relationships->map(fn ($r) => [
                 'id' => $r->id,

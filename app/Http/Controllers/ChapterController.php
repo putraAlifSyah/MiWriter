@@ -87,4 +87,40 @@ class ChapterController extends Controller
             'saved_at' => now()->toIso8601String(),
         ]);
     }
+
+    public function getSnapshots(Book $book, Chapter $chapter): JsonResponse
+    {
+        $snapshots = $chapter->snapshots()->select('id', 'created_at')->get();
+        return response()->json(['snapshots' => $snapshots]);
+    }
+
+    public function saveSnapshot(Book $book, Chapter $chapter): JsonResponse
+    {
+        $snapshot = $chapter->snapshots()->create([
+            'content_html' => $chapter->content_html,
+            'content_delta' => $chapter->content_delta,
+        ]);
+
+        return response()->json([
+            'message' => 'Snapshot saved.',
+            'snapshot' => ['id' => $snapshot->id, 'created_at' => $snapshot->created_at]
+        ], 201);
+    }
+
+    public function restoreSnapshot(Book $book, Chapter $chapter, \App\Models\ChapterSnapshot $snapshot): JsonResponse
+    {
+        if ($snapshot->chapter_id !== $chapter->id) {
+            return response()->json(['error' => 'Invalid snapshot.'], 400);
+        }
+
+        $chapter->update([
+            'content_html' => $snapshot->content_html,
+            'content_delta' => $snapshot->content_delta,
+        ]);
+
+        return response()->json([
+            'message' => 'Snapshot restored.',
+            'chapter' => $chapter
+        ]);
+    }
 }
