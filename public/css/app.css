@@ -808,3 +808,10 @@ a:hover {
 .nwp-theme-toggle:hover {
     background: var(--color-border-light);
 }
+
+/* === Dashboard Grid === */
+@media screen and (max-width: 767px) {
+    [style*="grid-template-columns:1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}

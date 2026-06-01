@@ -12,9 +12,20 @@
             </li>
             <li class="nwp-sidebar__nav-item">
                 <a href="{{ route('books.index') }}" class="nwp-sidebar__nav-link {{ request()->routeIs('books.*') ? 'nwp-sidebar__nav-link--active' : '' }}">
-                    Books
+                    My Books
                 </a>
             </li>
+            <li class="nwp-sidebar__nav-item">
+                <a href="{{ route('books.create') }}" class="nwp-sidebar__nav-link {{ request()->routeIs('books.create') ? 'nwp-sidebar__nav-link--active' : '' }}">
+                    + New Book
+                </a>
+            </li>
+        </ul>
+
+        <div style="padding:16px 24px 8px; font-size:11px; text-transform:uppercase; font-weight:700; color:var(--color-text-muted); letter-spacing:1px;">
+            Tools
+        </div>
+        <ul class="nwp-sidebar__nav">
             <li class="nwp-sidebar__nav-item">
                 <a href="{{ route('settings') }}" class="nwp-sidebar__nav-link {{ request()->routeIs('settings*') ? 'nwp-sidebar__nav-link--active' : '' }}">
                     Settings
