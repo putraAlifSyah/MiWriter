@@ -22,12 +22,14 @@ class Book extends Model
         'cover_image_path',
         'cover_thumbnail_path',
         'target_word_count',
+        'target_deadline',
     ];
 
     protected function casts(): array
     {
         return [
             'status' => BookStatus::class,
+            'target_deadline' => 'date',
         ];
     }
 

@@ -31,7 +31,31 @@ class StatisticsController extends Controller
             'weekly_progress' => $this->targetService->getWeeklyProgress($book, $user),
         ];
 
-        return view('statistics.index', compact('book', 'stats'));
+        // Advanced Goal Tracker (NaNoWriMo Mode)
+        $projectGoal = null;
+        if ($book->target_word_count && $book->target_deadline) {
+            $totalWords = $stats['total_word_count'];
+            $target = $book->target_word_count;
+            $deadline = \Carbon\Carbon::parse($book->target_deadline);
+            $today = \Carbon\Carbon::today();
+            
+            $daysRemaining = max(1, $today->diffInDays($deadline, false));
+            $wordsRemaining = max(0, $target - $totalWords);
+            $requiredPerDay = ceil($wordsRemaining / $daysRemaining);
+            $percentage = min(100, $target > 0 ? round(($totalWords / $target) * 100) : 0);
+
+            $projectGoal = [
+                'target' => $target,
+                'deadline' => $deadline,
+                'days_remaining' => $daysRemaining,
+                'words_remaining' => $wordsRemaining,
+                'required_per_day' => $requiredPerDay,
+                'percentage' => $percentage,
+                'is_overdue' => $today->gt($deadline) && $wordsRemaining > 0,
+            ];
+        }
+
+        return view('statistics.index', compact('book', 'stats', 'projectGoal'));
     }
 
     public function heatmap(Request $request): JsonResponse

@@ -4,7 +4,15 @@
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
     <h1 class="nwp-heading">{{ $book->title }}</h1>
     <div style="display:flex; gap:8px;">
-        <a href="{{ route('export.book', $book) }}?format=md" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Export</a>
+        <div style="position:relative; display:inline-block;" class="export-dropdown">
+            <button class="nwp-btn nwp-btn--sm nwp-btn--secondary" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">Export ▼</button>
+            <div style="display:none; position:absolute; right:0; top:100%; background:var(--color-bg-primary); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:8px; z-index:100; min-width:150px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+                <a href="{{ route('export.book', $book) }}?format=txt" class="nwp-btn nwp-btn--sm" style="display:block; text-align:left; background:transparent; width:100%; margin-bottom:4px;">📄 Text (.txt)</a>
+                <a href="{{ route('export.book', $book) }}?format=md" class="nwp-btn nwp-btn--sm" style="display:block; text-align:left; background:transparent; width:100%; margin-bottom:4px;">📝 Markdown (.md)</a>
+                <a href="{{ route('export.book', $book) }}?format=epub" class="nwp-btn nwp-btn--sm" style="display:block; text-align:left; background:transparent; width:100%; margin-bottom:4px; color:var(--color-accent);">📚 eBook (.epub)</a>
+                <a href="{{ route('export.book', $book) }}?format=pdf" class="nwp-btn nwp-btn--sm" style="display:block; text-align:left; background:transparent; width:100%; color:var(--color-danger);">📕 PDF (.pdf)</a>
+            </div>
+        </div>
         <form method="POST" action="{{ route('books.destroy', $book) }}" onsubmit="return confirm('Delete this book and all its content?')">
             @csrf @method('DELETE')
             <button type="submit" class="nwp-btn nwp-btn--sm nwp-btn--danger">Delete</button>

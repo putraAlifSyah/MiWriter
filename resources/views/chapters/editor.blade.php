@@ -36,8 +36,11 @@
     </div>
     <div style="display:flex; gap:8px; align-items:center;">
         <span id="save-status" class="nwp-text-sm nwp-text-muted"></span>
+        <button onclick="BetaReaderModule.openModal()" class="nwp-btn nwp-btn--sm nwp-btn--primary" style="background:var(--color-accent);">🤖 Beta Reader</button>
         <button onclick="SnapshotModule.openModal()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Snapshots</button>
         <button onclick="EditorModule.toggleFocusMode()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Focus</button>
+        <button onclick="EditorModule.toggleFullscreen()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Fullscreen</button>
+    </div>
         <button onclick="EditorModule.toggleFullscreen()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Fullscreen</button>
     </div>
 </div>
@@ -50,6 +53,40 @@
     <div style="width:1px; background:var(--color-border); margin:4px 0;"></div>
     <input type="text" id="inline-ai-custom" placeholder="Custom prompt..." class="nwp-input nwp-input--sm" style="width:120px; font-size:11px; padding:2px 6px; border:none; background:var(--color-bg-primary);">
     <button onclick="InlineAiModule.customEdit()" class="nwp-btn nwp-btn--sm nwp-btn--primary" style="font-size:11px; padding:4px 8px;">Go</button>
+</div>
+
+<!-- Beta Reader Modal -->
+<div id="beta-reader-modal" class="nwp-modal-overlay" style="z-index:90000;">
+    <div class="nwp-modal" style="max-width:800px; max-height:90vh; display:flex; flex-direction:column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 class="nwp-modal__title" style="margin:0;">🤖 AI Beta Reader</h3>
+            <button type="button" onclick="BetaReaderModule.closeModal()" style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--color-text-muted);">&times;</button>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+            <p class="nwp-text-sm nwp-text-muted">AI akan membaca bab ini dan memberikan kritik mengenai Pacing, aturan "Show Don't Tell", serta mendeteksi masalah kontinuitas cerita.</p>
+            <button id="btn-run-beta-reader" onclick="BetaReaderModule.run()" class="nwp-btn nwp-btn--primary nwp-mt-2" style="background:var(--color-accent);">Mulai Analisis</button>
+        </div>
+
+        <div id="beta-reader-content" style="flex:1; overflow-y:auto; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:16px; display:none; flex-direction:column; gap:16px; background:var(--color-bg-secondary);">
+            <div>
+                <h4 style="color:var(--color-accent); margin-bottom:8px;">⏱️ Pacing (Tempo Cerita)</h4>
+                <div id="br-pacing" class="nwp-text-sm" style="line-height:1.6;"></div>
+            </div>
+            <div>
+                <h4 style="color:var(--color-accent); margin-bottom:8px;">🎭 Show, Don't Tell</h4>
+                <div id="br-showdonttell" class="nwp-text-sm" style="line-height:1.6;"></div>
+            </div>
+            <div>
+                <h4 style="color:var(--color-accent); margin-bottom:8px;">🔗 Continuity & Consistency</h4>
+                <div id="br-continuity" class="nwp-text-sm" style="line-height:1.6;"></div>
+            </div>
+        </div>
+        <div id="beta-reader-loading" class="nwp-text-sm nwp-text-muted" style="display:none; text-align:center; padding:32px;">
+            <div style="font-size:24px; margin-bottom:16px;">📚</div>
+            AI sedang membaca dan menganalisis bab ini...<br>Ini mungkin memakan waktu hingga 30 detik.
+        </div>
+    </div>
 </div>
 
 <!-- Snapshot Modal -->
@@ -424,6 +461,61 @@ const InlineAiModule = {
         if(val) {
             this.edit(val);
             document.getElementById('inline-ai-custom').value = '';
+        }
+    }
+};
+
+const BetaReaderModule = {
+    modal: null,
+    chapterId: {{ $chapter->id }},
+    bookId: {{ $book->id }},
+
+    openModal() {
+        this.modal = document.getElementById('beta-reader-modal');
+        this.modal.classList.add('nwp-modal-overlay--active');
+        document.getElementById('beta-reader-content').style.display = 'none';
+        document.getElementById('btn-run-beta-reader').style.display = 'inline-flex';
+    },
+
+    closeModal() {
+        if(this.modal) this.modal.classList.remove('nwp-modal-overlay--active');
+    },
+
+    async run() {
+        const text = EditorModule.quill.getText().trim();
+        if (text.length < 50) {
+            alert('Teks bab terlalu pendek untuk dianalisis oleh Beta Reader.');
+            return;
+        }
+
+        document.getElementById('btn-run-beta-reader').style.display = 'none';
+        document.getElementById('beta-reader-loading').style.display = 'block';
+        document.getElementById('beta-reader-content').style.display = 'none';
+
+        try {
+            const res = await fetch(`/books/${this.bookId}/chapters/${this.chapterId}/beta-read`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ text: text })
+            });
+
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+
+            document.getElementById('br-pacing').innerHTML = data.pacing.replace(/\n/g, '<br>');
+            document.getElementById('br-showdonttell').innerHTML = data.show_dont_tell.replace(/\n/g, '<br>');
+            document.getElementById('br-continuity').innerHTML = data.continuity.replace(/\n/g, '<br>');
+
+            document.getElementById('beta-reader-loading').style.display = 'none';
+            document.getElementById('beta-reader-content').style.display = 'flex';
+        } catch(e) {
+            alert('Gagal menjalankan Beta Reader. Pastikan konfigurasi AI Anda sudah benar di Settings.');
+            document.getElementById('beta-reader-loading').style.display = 'none';
+            document.getElementById('btn-run-beta-reader').style.display = 'inline-flex';
         }
     }
 };

@@ -89,6 +89,62 @@ class AiController extends Controller
         }
     }
 
+    public function betaRead(Request $request, Book $book, \App\Models\Chapter $chapter): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($book->user_id !== $user->id || $chapter->book_id !== $book->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'text' => 'required|string',
+        ]);
+
+        try {
+            $result = $this->aiService->betaRead($user, $book, $chapter, $request->text);
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    public function aiWizard(Request $request, Book $book): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($book->user_id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'premise' => 'required|string',
+            'framework' => 'required|string',
+        ]);
+
+        try {
+            $plotPoints = $this->aiService->aiWizard($user, $book, $request->premise, $request->framework);
+            
+            // Insert into database
+            $created = [];
+            $position = $book->plotPoints()->max('position') + 1;
+            
+            foreach ($plotPoints as $point) {
+                $created[] = $book->plotPoints()->create([
+                    'title' => substr($point['title'] ?? 'Untitled', 0, 150),
+                    'description' => $point['description'] ?? '',
+                    'act' => in_array($point['act'] ?? '', ['beginning', 'middle', 'end']) ? $point['act'] : 'beginning',
+                    'status' => 'planned',
+                    'position' => $position++,
+                ]);
+            }
+
+            return response()->json(['success' => true, 'created' => count($created)]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
     /**
      * Get recent AI chat history (max 20 messages).
      */

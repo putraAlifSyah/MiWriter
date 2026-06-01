@@ -21,6 +21,7 @@ class UpdateBookRequest extends FormRequest
             'synopsis' => 'nullable|string|max:2000',
             'status' => ['nullable', Rule::enum(BookStatus::class)],
             'target_word_count' => 'nullable|integer|min:0',
+            'target_deadline' => 'nullable|date',
         ];
     }
 }

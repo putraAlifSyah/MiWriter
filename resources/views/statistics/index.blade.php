@@ -109,16 +109,52 @@
         </form>
 
         <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--color-border-light);">
-            <label class="nwp-label">Book Word Count Target</label>
-            <form method="POST" action="{{ route('books.update', $book) }}" style="display:flex; gap:8px;">
+            <label class="nwp-label">Book Project Goal (NaNoWriMo Mode)</label>
+            <form method="POST" action="{{ route('books.update', $book) }}" style="display:flex; flex-direction:column; gap:8px;">
                 @csrf @method('PUT')
                 <input type="hidden" name="title" value="{{ $book->title }}">
-                <input type="number" name="target_word_count" class="nwp-input" min="0" placeholder="e.g. 80000" value="{{ $book->target_word_count }}" style="flex:1;">
-                <button type="submit" class="nwp-btn nwp-btn--secondary nwp-btn--sm">Save</button>
+                <div style="display:flex; gap:8px;">
+                    <input type="number" name="target_word_count" class="nwp-input" min="0" placeholder="Target Words (e.g. 50000)" value="{{ $book->target_word_count }}" style="flex:1;">
+                    <input type="date" name="target_deadline" class="nwp-input" value="{{ $book->target_deadline ? $book->target_deadline->format('Y-m-d') : '' }}" style="flex:1;">
+                </div>
+                <button type="submit" class="nwp-btn nwp-btn--secondary nwp-btn--sm" style="align-self:flex-start;">Save Project Goal</button>
             </form>
         </div>
     </div>
 </div>
+
+@if($projectGoal)
+<div class="nwp-card nwp-mt-3">
+    <h3 style="font-size:var(--font-size-sm); font-weight:600; color:var(--color-text-muted); margin-bottom:16px;">🎯 Project Goal Status</h3>
+    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+        <span class="nwp-text-sm" style="font-weight:500;">Overall Progress</span>
+        <span class="nwp-text-sm" style="font-weight:600; color:var(--color-accent);">{{ $projectGoal['percentage'] }}%</span>
+    </div>
+    <div class="nwp-progress" style="height:12px; margin-bottom:16px;">
+        <div class="nwp-progress__bar" style="width:{{ $projectGoal['percentage'] }}%; background: linear-gradient(90deg, var(--color-accent), #8b5cf6);"></div>
+    </div>
+    
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:16px; background:var(--color-bg-secondary); padding:16px; border-radius:var(--radius-md);">
+        <div>
+            <div class="nwp-text-sm nwp-text-muted">Deadline</div>
+            <div style="font-weight:600;">{{ $projectGoal['deadline']->format('M d, Y') }} ({{ $projectGoal['days_remaining'] }} days left)</div>
+        </div>
+        <div>
+            <div class="nwp-text-sm nwp-text-muted">Words Remaining</div>
+            <div style="font-weight:600;">{{ number_format($projectGoal['words_remaining']) }} words</div>
+        </div>
+        <div>
+            <div class="nwp-text-sm nwp-text-muted">Required Daily Pace</div>
+            <div style="font-weight:600; color:var(--color-danger);">{{ number_format($projectGoal['required_per_day']) }} words/day</div>
+        </div>
+    </div>
+    @if($projectGoal['is_overdue'])
+        <div class="nwp-toast nwp-toast--error nwp-mt-2" style="position:static;">The deadline has passed, but you haven't reached your target yet. Keep writing!</div>
+    @elseif($projectGoal['words_remaining'] == 0)
+        <div class="nwp-toast nwp-toast--success nwp-mt-2" style="position:static;">Congratulations! You have reached your project goal! 🎉</div>
+    @endif
+</div>
+@endif
 
 <div id="target-status" class="nwp-text-sm nwp-mb-2" style="display:none;"></div>
 

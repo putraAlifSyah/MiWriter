@@ -6,7 +6,40 @@
         <a href="{{ route('books.show', $book) }}" class="nwp-text-sm">&larr; {{ $book->title }}</a>
         <h1 class="nwp-heading nwp-mt-1">Plot Outline</h1>
     </div>
-    <button onclick="document.getElementById('plot-form-container').style.display='block'" class="nwp-btn nwp-btn--sm">+ Add Plot Point</button>
+    <div style="display:flex; gap:8px;">
+        <button onclick="document.getElementById('ai-wizard-modal').style.display='block'" class="nwp-btn nwp-btn--sm nwp-btn--primary" style="background:var(--color-accent);">✨ AI Plot Wizard</button>
+        <button onclick="document.getElementById('plot-form-container').style.display='block'" class="nwp-btn nwp-btn--sm">+ Add Plot Point</button>
+    </div>
+</div>
+
+<!-- AI Wizard Modal -->
+<div id="ai-wizard-modal" class="nwp-modal-overlay" style="z-index:10000; display:none;">
+    <div class="nwp-modal" style="max-width:600px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 class="nwp-modal__title" style="margin:0;">✨ AI Plot Framework Wizard</h3>
+            <button type="button" onclick="document.getElementById('ai-wizard-modal').style.display='none'" style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--color-text-muted);">&times;</button>
+        </div>
+        <p class="nwp-text-sm nwp-text-muted nwp-mb-3">Biarkan AI membuatkan kerangka plot otomatis berdasarkan ide cerita Anda.</p>
+        
+        <form id="ai-wizard-form" style="display:flex; flex-direction:column; gap:16px;">
+            <div class="nwp-form-group">
+                <label class="nwp-label">Story Premise</label>
+                <textarea name="premise" class="nwp-textarea" rows="3" placeholder="Contoh: Seorang pemuda menemukan pedang ajaib di halaman belakang rumahnya dan harus menyelamatkan dunia dari naga jahat..." required></textarea>
+            </div>
+            <div class="nwp-form-group">
+                <label class="nwp-label">Framework</label>
+                <select name="framework" class="nwp-select" required>
+                    <option value="Save The Cat">Save The Cat</option>
+                    <option value="Hero's Journey">Hero's Journey</option>
+                    <option value="3-Act Structure">3-Act Structure</option>
+                </select>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <button type="button" onclick="document.getElementById('ai-wizard-modal').style.display='none'" class="nwp-btn nwp-btn--secondary">Cancel</button>
+                <button type="submit" id="btn-wizard-submit" class="nwp-btn nwp-btn--primary" style="background:var(--color-accent);">Generate Plot</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="nwp-tabs">
@@ -191,6 +224,35 @@ function deletePlotPoint(id) {
     .then(() => document.getElementById('plot-' + id).remove())
     .catch(() => alert('Failed to delete.'));
 }
+
+document.getElementById('ai-wizard-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(this));
+    const btn = document.getElementById('btn-wizard-submit');
+    btn.disabled = true;
+    btn.textContent = 'Generating... (may take 30s)';
+
+    fetch('{{ route("plot.ai-wizard", $book) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(r => { if (!r.ok) throw r; return r.json(); })
+    .then(res => {
+        if(res.success) {
+            window.location.reload();
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.textContent = 'Generate Plot';
+        err.json ? err.json().then(d => alert(d.error || 'Failed to generate plot.')) : alert('Failed to contact AI.');
+    });
+});
 </script>
 @endpush
 @endsection

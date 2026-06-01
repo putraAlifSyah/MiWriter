@@ -46,6 +46,8 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
         Route::put('chapters/{chapter}/content', [ChapterController::class, 'saveContent'])->name('chapters.content');
         Route::delete('chapters/{chapter}', [ChapterController::class, 'destroy'])->name('chapters.destroy');
 
+        Route::post('chapters/{chapter}/beta-read', [\App\Http\Controllers\AiController::class, 'betaRead'])->name('chapters.beta-read');
+
         Route::get('chapters/{chapter}/snapshots', [ChapterController::class, 'getSnapshots'])->name('chapters.snapshots.index');
         Route::post('chapters/{chapter}/snapshots', [ChapterController::class, 'saveSnapshot'])->name('chapters.snapshots.store');
         Route::post('chapters/{chapter}/snapshots/{snapshot}/restore', [ChapterController::class, 'restoreSnapshot'])->name('chapters.snapshots.restore');
@@ -81,6 +83,7 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
         Route::put('plot/{plotPoint}', [PlotController::class, 'update'])->name('plot.update');
         Route::put('plot/{plotPoint}/move', [PlotController::class, 'move'])->name('plot.move');
         Route::delete('plot/{plotPoint}', [PlotController::class, 'destroy'])->name('plot.destroy');
+        Route::post('plot/ai-wizard', [\App\Http\Controllers\AiController::class, 'aiWizard'])->name('plot.ai-wizard');
     });
 
     // World Building

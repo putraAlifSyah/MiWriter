@@ -530,4 +530,70 @@ PROMPT;
 
         return trim($response);
     }
+
+    public function betaRead(User $user, Book $book, Chapter $chapter, string $text): array
+    {
+        $provider = $user->ai_provider;
+        $model = $user->ai_model;
+        $apiKey = $user->ai_api_key;
+
+        if (!$provider || !$model || !$apiKey) {
+            throw new \Exception('AI not configured.');
+        }
+
+        $systemPrompt = $this->buildSystemPrompt($user, $book, false);
+        $systemPrompt .= "\n\nYou are a professional fiction beta reader and editor. The user will provide the text of a chapter titled '{$chapter->title}'. ";
+        $systemPrompt .= "You must analyze the chapter and provide critique in three specific areas: Pacing, Show Don't Tell, and Continuity/Consistency. ";
+        $systemPrompt .= "Return ONLY a JSON object with keys: 'pacing', 'show_dont_tell', and 'continuity'. Each key should contain a string with your detailed feedback. Do not include markdown formatting like ```json or any explanations outside the JSON.";
+
+        $message = "Please beta-read the following chapter text:\n\n" . $text;
+
+        $rawResponse = $this->callProvider($provider, $apiKey, $model, $systemPrompt, $message);
+
+        $response = trim($rawResponse);
+        if (str_starts_with($response, '```')) {
+            $response = preg_replace('/^```(?:json)?\s*/', '', $response);
+            $response = preg_replace('/\s*```$/', '', $response);
+        }
+
+        $decoded = json_decode($response, true);
+        if (!$decoded || !is_array($decoded)) {
+            throw new \Exception('Invalid JSON from AI.');
+        }
+
+        return $decoded;
+    }
+
+    public function aiWizard(User $user, Book $book, string $premise, string $framework): array
+    {
+        $provider = $user->ai_provider;
+        $model = $user->ai_model;
+        $apiKey = $user->ai_api_key;
+
+        if (!$provider || !$model || !$apiKey) {
+            throw new \Exception('AI not configured.');
+        }
+
+        $systemPrompt = "You are a professional narrative designer and plot architect. The user is writing a novel titled '{$book->title}'. ";
+        $systemPrompt .= "You must generate a structured plot outline using the '{$framework}' framework, based on their premise. ";
+        $systemPrompt .= "Return ONLY a valid JSON array of objects. Each object MUST have these keys: 'title' (string, max 100 chars), 'description' (string), and 'act' (string: exactly 'beginning', 'middle', or 'end'). ";
+        $systemPrompt .= "Do NOT include markdown like ```json or any conversational text. Just the raw JSON array. Keep the descriptions concise but evocative.";
+
+        $message = "Premise:\n" . $premise;
+
+        $rawResponse = $this->callProvider($provider, $apiKey, $model, $systemPrompt, $message);
+
+        $response = trim($rawResponse);
+        if (str_starts_with($response, '```')) {
+            $response = preg_replace('/^```(?:json)?\s*/', '', $response);
+            $response = preg_replace('/\s*```$/', '', $response);
+        }
+
+        $decoded = json_decode($response, true);
+        if (!$decoded || !is_array($decoded)) {
+            throw new \Exception('Invalid JSON from AI.');
+        }
+
+        return $decoded;
+    }
 }
