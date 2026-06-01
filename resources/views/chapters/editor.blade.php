@@ -41,8 +41,6 @@
         <button onclick="EditorModule.toggleFocusMode()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Focus</button>
         <button onclick="EditorModule.toggleFullscreen()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Fullscreen</button>
     </div>
-        <button onclick="EditorModule.toggleFullscreen()" class="nwp-btn nwp-btn--sm nwp-btn--secondary">Fullscreen</button>
-    </div>
 </div>
 
 <!-- Inline AI Toolbar -->
