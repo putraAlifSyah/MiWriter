@@ -38,6 +38,39 @@
 </div>
 
 <!-- Progress + Targets -->
+@if($projectGoal)
+<div class="nwp-card nwp-mb-3">
+    <h3 style="font-size:var(--font-size-sm); font-weight:600; color:var(--color-text-muted); margin-bottom:16px;">🎯 Project Goal Status</h3>
+    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+        <span class="nwp-text-sm" style="font-weight:500;">Overall Progress</span>
+        <span class="nwp-text-sm" style="font-weight:600; color:var(--color-accent);">{{ $projectGoal['percentage'] }}%</span>
+    </div>
+    <div class="nwp-progress" style="height:12px; margin-bottom:16px;">
+        <div class="nwp-progress__bar" style="width:{{ $projectGoal['percentage'] }}%; background: linear-gradient(90deg, var(--color-accent), #8b5cf6);"></div>
+    </div>
+    
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:16px; background:var(--color-bg-secondary); padding:16px; border-radius:var(--radius-md);">
+        <div>
+            <div class="nwp-text-sm nwp-text-muted">Deadline</div>
+            <div style="font-weight:600;">{{ $projectGoal['deadline']->format('M d, Y') }} <span style="font-size:12px; font-weight:normal; color:var(--color-text-muted);">({{ $projectGoal['days_remaining'] }} days left)</span></div>
+        </div>
+        <div>
+            <div class="nwp-text-sm nwp-text-muted">Words Remaining</div>
+            <div style="font-weight:600;">{{ number_format($projectGoal['words_remaining']) }} words</div>
+        </div>
+        <div>
+            <div class="nwp-text-sm nwp-text-muted">Required Daily Pace</div>
+            <div style="font-weight:600; color:var(--color-danger);">{{ number_format($projectGoal['required_per_day']) }} words/day</div>
+        </div>
+    </div>
+    @if($projectGoal['is_overdue'])
+        <div class="nwp-toast nwp-toast--error nwp-mt-3" style="position:static;">The deadline has passed, but you haven't reached your target yet. Keep writing!</div>
+    @elseif($projectGoal['words_remaining'] == 0)
+        <div class="nwp-toast nwp-toast--success nwp-mt-3" style="position:static;">Congratulations! You have reached your project goal! 🎉</div>
+    @endif
+</div>
+@endif
+
 <div class="nwp-dashboard-grid">
     <!-- Progress Bars -->
     <div class="nwp-card">
@@ -123,38 +156,7 @@
     </div>
 </div>
 
-@if($projectGoal)
-<div class="nwp-card nwp-mt-3">
-    <h3 style="font-size:var(--font-size-sm); font-weight:600; color:var(--color-text-muted); margin-bottom:16px;">🎯 Project Goal Status</h3>
-    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-        <span class="nwp-text-sm" style="font-weight:500;">Overall Progress</span>
-        <span class="nwp-text-sm" style="font-weight:600; color:var(--color-accent);">{{ $projectGoal['percentage'] }}%</span>
-    </div>
-    <div class="nwp-progress" style="height:12px; margin-bottom:16px;">
-        <div class="nwp-progress__bar" style="width:{{ $projectGoal['percentage'] }}%; background: linear-gradient(90deg, var(--color-accent), #8b5cf6);"></div>
-    </div>
-    
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:16px; background:var(--color-bg-secondary); padding:16px; border-radius:var(--radius-md);">
-        <div>
-            <div class="nwp-text-sm nwp-text-muted">Deadline</div>
-            <div style="font-weight:600;">{{ $projectGoal['deadline']->format('M d, Y') }} ({{ $projectGoal['days_remaining'] }} days left)</div>
-        </div>
-        <div>
-            <div class="nwp-text-sm nwp-text-muted">Words Remaining</div>
-            <div style="font-weight:600;">{{ number_format($projectGoal['words_remaining']) }} words</div>
-        </div>
-        <div>
-            <div class="nwp-text-sm nwp-text-muted">Required Daily Pace</div>
-            <div style="font-weight:600; color:var(--color-danger);">{{ number_format($projectGoal['required_per_day']) }} words/day</div>
-        </div>
-    </div>
-    @if($projectGoal['is_overdue'])
-        <div class="nwp-toast nwp-toast--error nwp-mt-2" style="position:static;">The deadline has passed, but you haven't reached your target yet. Keep writing!</div>
-    @elseif($projectGoal['words_remaining'] == 0)
-        <div class="nwp-toast nwp-toast--success nwp-mt-2" style="position:static;">Congratulations! You have reached your project goal! 🎉</div>
-    @endif
-</div>
-@endif
+<!-- Empty, already moved to the top. -->
 
 <div id="target-status" class="nwp-text-sm nwp-mb-2" style="display:none;"></div>
 

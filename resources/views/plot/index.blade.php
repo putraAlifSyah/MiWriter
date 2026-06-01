@@ -7,24 +7,24 @@
         <h1 class="nwp-heading nwp-mt-1">Plot Outline</h1>
     </div>
     <div style="display:flex; gap:8px;">
-        <button onclick="document.getElementById('ai-wizard-modal').style.display='block'" class="nwp-btn nwp-btn--sm nwp-btn--primary" style="background:var(--color-accent);">✨ AI Plot Wizard</button>
+        <button onclick="document.getElementById('ai-wizard-modal').style.display='flex'" class="nwp-btn nwp-btn--sm nwp-btn--primary" style="background:var(--color-accent);">✨ AI Plot Wizard</button>
         <button onclick="document.getElementById('plot-form-container').style.display='block'" class="nwp-btn nwp-btn--sm">+ Add Plot Point</button>
     </div>
 </div>
 
 <!-- AI Wizard Modal -->
-<div id="ai-wizard-modal" class="nwp-modal-overlay" style="z-index:10000; display:none;">
-    <div class="nwp-modal" style="max-width:600px;">
+<div id="ai-wizard-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; display:none; align-items:center; justify-content:center; padding:16px;">
+    <div class="nwp-card" style="width:100%; max-width:600px; position:relative; max-height:90vh; overflow-y:auto; margin:0;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-            <h3 class="nwp-modal__title" style="margin:0;">✨ AI Plot Framework Wizard</h3>
-            <button type="button" onclick="document.getElementById('ai-wizard-modal').style.display='none'" style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--color-text-muted);">&times;</button>
+            <h3 style="margin:0; font-size:var(--font-size-lg); font-weight:700;">✨ AI Plot Framework Wizard</h3>
+            <button type="button" onclick="document.getElementById('ai-wizard-modal').style.display='none'" style="background:none; border:none; cursor:pointer; font-size:24px; color:var(--color-text-muted);">&times;</button>
         </div>
         <p class="nwp-text-sm nwp-text-muted nwp-mb-3">Biarkan AI membuatkan kerangka plot otomatis berdasarkan ide cerita Anda.</p>
         
         <form id="ai-wizard-form" style="display:flex; flex-direction:column; gap:16px;">
             <div class="nwp-form-group">
                 <label class="nwp-label">Story Premise</label>
-                <textarea name="premise" class="nwp-textarea" rows="3" placeholder="Contoh: Seorang pemuda menemukan pedang ajaib di halaman belakang rumahnya dan harus menyelamatkan dunia dari naga jahat..." required></textarea>
+                <textarea name="premise" class="nwp-textarea" rows="4" placeholder="Contoh: Seorang pemuda menemukan pedang ajaib di halaman belakang rumahnya dan harus menyelamatkan dunia dari naga jahat..." required></textarea>
             </div>
             <div class="nwp-form-group">
                 <label class="nwp-label">Framework</label>
