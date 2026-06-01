@@ -35,14 +35,14 @@
 <!-- Graph Modal -->
 <div id="graph-modal" class="nwp-modal-overlay" style="z-index:90000;">
     <div class="nwp-modal" style="max-width:90vw; width:1000px; max-height:90vh; display:flex; flex-direction:column; padding:24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
             <h3 class="nwp-modal__title" style="margin:0;">Character Relationships</h3>
-            <div style="display:flex; gap:8px;">
+            <div style="display:flex; gap:8px; align-items:center;">
                 <button onclick="GraphModule.generateWithAI()" class="nwp-btn nwp-btn--sm nwp-btn--primary" style="background:var(--color-accent);">✨ AI Auto-Detect</button>
                 <button type="button" onclick="GraphModule.closeModal()" style="background:none; border:none; cursor:pointer; font-size:24px; color:var(--color-text-muted);">&times;</button>
             </div>
         </div>
-        <div id="network-graph" style="flex:1; border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-bg-primary); height:500px; position:relative; overflow:hidden;"></div>
+        <div id="network-graph" style="flex:1; border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-bg-primary); height:60vh; min-height:300px; max-height:500px; position:relative; overflow:hidden;"></div>
     </div>
 </div>
 
