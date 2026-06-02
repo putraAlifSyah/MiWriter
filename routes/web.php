@@ -37,6 +37,13 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
     Route::resource('books', BookController::class)->except(['edit']);
     Route::post('books/{book}/cover', [BookController::class, 'uploadCover'])->name('books.cover.upload');
     Route::delete('books/{book}/cover', [BookController::class, 'removeCover'])->name('books.cover.remove');
+    Route::get('books/{book}/wiki', [\App\Http\Controllers\WikiController::class, 'overview'])->name('books.wiki.index');
+    Route::get('books/{book}/wiki/chapters', [\App\Http\Controllers\WikiController::class, 'chapters'])->name('books.wiki.chapters');
+    Route::get('books/{book}/wiki/characters', [\App\Http\Controllers\WikiController::class, 'characters'])->name('books.wiki.characters');
+    Route::get('books/{book}/wiki/characters/{character}', [\App\Http\Controllers\WikiController::class, 'character'])->name('books.wiki.characters.show');
+    Route::get('books/{book}/wiki/locations', [\App\Http\Controllers\WikiController::class, 'locations'])->name('books.wiki.locations');
+    Route::get('books/{book}/wiki/world-elements', [\App\Http\Controllers\WikiController::class, 'worldElements'])->name('books.wiki.world-elements');
+    Route::delete('books/{book}/wiki/clear', [\App\Http\Controllers\WikiController::class, 'clear'])->name('books.wiki.clear');
 
     // Chapters (nested under books)
     Route::prefix('books/{book}')->middleware('book.owner')->group(function () {
@@ -48,7 +55,7 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
         Route::delete('chapters/{chapter}', [ChapterController::class, 'destroy'])->name('chapters.destroy');
 
         Route::post('chapters/{chapter}/beta-read', [\App\Http\Controllers\AiController::class, 'betaRead'])->name('chapters.beta-read');
-        Route::post('chapters/{chapter}/extract-characters', [\App\Http\Controllers\AiController::class, 'extractCharacters'])->name('chapters.extract-characters');
+        Route::post('chapters/{chapter}/extract-wiki', [\App\Http\Controllers\AiController::class, 'extractWiki'])->name('chapters.extract-wiki');
 
         Route::get('chapters/{chapter}/snapshots', [ChapterController::class, 'getSnapshots'])->name('chapters.snapshots.index');
         Route::post('chapters/{chapter}/snapshots', [ChapterController::class, 'saveSnapshot'])->name('chapters.snapshots.store');

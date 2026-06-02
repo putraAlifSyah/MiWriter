@@ -59,6 +59,8 @@ Setup takes 30 seconds: go to Settings, pick a provider, paste your key, done.
 - **Inline AI Editor**: Select text in the editor to instantly rewrite, expand, or fix grammar using AI
 - **AI Beta Reader & Continuity Checker**: Get professional AI feedback on your chapter's pacing, "show don't tell", and story continuity.
 - **AI Plot Framework Wizard**: Auto-generate story frameworks (Save The Cat, Hero's Journey, 3-Act) directly into your Kanban board.
+- **Story Wiki & Auto-Extraction**: A self-updating encyclopedia. AI automatically reads your chapters and updates character profiles, locations, and world elements.
+- **Character Development Timeline**: Chronological tracking of how your characters evolve from chapter to chapter.
 - Floating AI chat assistant available on every page
 
 **Export**

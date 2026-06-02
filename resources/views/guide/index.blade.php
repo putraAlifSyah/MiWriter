@@ -286,6 +286,39 @@
             </div>
         </div>
 
+        <!-- Story Wiki -->
+        <div class="guide-section" id="wiki">
+            <div class="lang-en">
+                <h2>Story Wiki & AI Extraction</h2>
+                <p>The Story Wiki acts as an automated encyclopedia for your novel, populated intelligently by AI.</p>
+                <h3>AI Auto-Extraction</h3>
+                <ul>
+                    <li>In the chapter editor, use the <strong>AI Auto-Extract</strong> button or wait 10 minutes for it to extract automatically.</li>
+                    <li>The AI will read your chapter and automatically update character profiles, locations, and world elements with new developments (e.g. physical traits, motivations).</li>
+                </ul>
+                <h3>Character Development Timeline</h3>
+                <ul>
+                    <li>Click on a character card in the Wiki to view their dedicated profile page.</li>
+                    <li>At the bottom, you'll see a chronological timeline showing exactly how the character evolves from chapter to chapter, based on the AI's extraction!</li>
+                </ul>
+            </div>
+            <div class="lang-id">
+                <h2>Story Wiki & Ekstraksi AI</h2>
+                <p>Story Wiki bertindak sebagai ensiklopedia otomatis untuk novelmu, yang diisi secara cerdas oleh AI.</p>
+                <h3>Ekstraksi Otomatis AI</h3>
+                <ul>
+                    <li>Di editor bab, gunakan tombol <strong>AI Auto-Extract</strong> atau tunggu 10 menit agar AI mengekstrak secara otomatis.</li>
+                    <li>AI akan membaca babmu dan memperbarui profil karakter, lokasi, serta elemen dunia dengan perkembangan terbaru (misal: ciri fisik, motivasi).</li>
+                </ul>
+                <h3>Timeline Perkembangan Karakter</h3>
+                <ul>
+                    <li>Klik kartu karakter di Wiki untuk melihat halaman profil khususnya.</li>
+                    <li>Di bagian bawah, kamu akan melihat timeline kronologis yang menunjukkan bagaimana karakter tersebut berkembang dari bab ke bab, berdasarkan ekstraksi AI!</li>
+                </ul>
+            </div>
+        </div>
+
+
         <!-- Statistics -->
         <div class="guide-section" id="statistics">
             <div class="lang-en">
@@ -420,6 +453,7 @@
             </a>
             <a href="#plot">Plot</a>
             <a href="#world">World Building</a>
+            <a href="#wiki">Story Wiki</a>
             <a href="#statistics">
                 <span class="lang-en">Statistics</span>
                 <span class="lang-id">Statistik</span>
