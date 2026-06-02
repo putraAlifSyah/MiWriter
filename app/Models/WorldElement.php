@@ -15,6 +15,7 @@ class WorldElement extends Model
         'book_id',
         'name',
         'category',
+        'image_path',
         'description',
         'rules_laws',
         'notes',

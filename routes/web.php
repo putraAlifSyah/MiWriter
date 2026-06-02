@@ -42,7 +42,9 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
     Route::get('books/{book}/wiki/characters', [\App\Http\Controllers\WikiController::class, 'characters'])->name('books.wiki.characters');
     Route::get('books/{book}/wiki/characters/{character}', [\App\Http\Controllers\WikiController::class, 'character'])->name('books.wiki.characters.show');
     Route::get('books/{book}/wiki/locations', [\App\Http\Controllers\WikiController::class, 'locations'])->name('books.wiki.locations');
+    Route::get('books/{book}/wiki/locations/{location}', [\App\Http\Controllers\WikiController::class, 'location'])->name('books.wiki.locations.show');
     Route::get('books/{book}/wiki/world-elements', [\App\Http\Controllers\WikiController::class, 'worldElements'])->name('books.wiki.world-elements');
+    Route::get('books/{book}/wiki/world-elements/{worldElement}', [\App\Http\Controllers\WikiController::class, 'worldElement'])->name('books.wiki.world-elements.show');
     Route::delete('books/{book}/wiki/clear', [\App\Http\Controllers\WikiController::class, 'clear'])->name('books.wiki.clear');
 
     // Chapters (nested under books)
@@ -79,6 +81,7 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
         Route::get('locations', [LocationController::class, 'index'])->name('locations.index');
         Route::post('locations', [LocationController::class, 'store'])->name('locations.store');
         Route::get('locations/hierarchy', [LocationController::class, 'hierarchy'])->name('locations.hierarchy');
+        Route::get('locations/{location}', [LocationController::class, 'show'])->name('locations.show');
         Route::put('locations/{location}', [LocationController::class, 'update'])->name('locations.update');
         Route::delete('locations/{location}', [LocationController::class, 'destroy'])->name('locations.destroy');
         Route::post('locations/{location}/image', [LocationController::class, 'uploadImage'])->name('locations.image');
@@ -99,8 +102,10 @@ Route::middleware(['auth', 'session.timeout'])->group(function () {
     Route::prefix('books/{book}')->middleware('book.owner')->group(function () {
         Route::get('world', [WorldElementController::class, 'index'])->name('world.index');
         Route::post('world', [WorldElementController::class, 'store'])->name('world.store');
+        Route::get('world/{element}', [WorldElementController::class, 'show'])->name('world.show');
         Route::put('world/{element}', [WorldElementController::class, 'update'])->name('world.update');
         Route::delete('world/{element}', [WorldElementController::class, 'destroy'])->name('world.destroy');
+        Route::post('world/{element}/image', [WorldElementController::class, 'uploadImage'])->name('world.image');
     });
 
     // Writing Targets

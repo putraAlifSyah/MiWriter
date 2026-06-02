@@ -70,13 +70,22 @@
             </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:12px;">
                 @foreach($elements as $element)
-                    <div class="nwp-card" id="element-{{ $element->id }}" style="padding:16px;">
-                        <div style="display:flex; justify-content:space-between; align-items:start;">
-                            <h3 style="font-weight:600; font-size:var(--font-size-base);">{{ $element->name }}</h3>
-                            <button onclick="deleteElement({{ $element->id }})" class="nwp-btn nwp-btn--ghost nwp-btn--sm" style="color:var(--color-danger); height:24px; min-height:24px; padding:0 8px;">Delete</button>
+                    <div class="nwp-card" id="element-{{ $element->id }}" style="padding:16px; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s;" onclick="window.location.href='{{ route('world.show', [$book, $element]) }}'" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                            <div style="display:flex; gap:12px; align-items:center;">
+                                @if($element->image_path)
+                                    <img src="{{ Storage::url($element->image_path) }}" alt="{{ $element->name }}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; flex-shrink:0;">
+                                @else
+                                    <div style="width:48px; height:48px; border-radius:8px; background:var(--color-bg-secondary); display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; border:1px solid var(--color-border-light);">🔮</div>
+                                @endif
+                                <div>
+                                    <h3 style="font-weight:600; font-size:var(--font-size-base); margin:0;">{{ $element->name }}</h3>
+                                </div>
+                            </div>
+                            <button onclick="event.stopPropagation(); deleteElement({{ $element->id }})" class="nwp-btn nwp-btn--ghost nwp-btn--sm" style="color:var(--color-danger); height:24px; min-height:24px; padding:0 8px;">Delete</button>
                         </div>
                         @if($element->description)
-                            <p class="nwp-text-sm nwp-text-muted" style="margin-top:6px;">{{ Str::limit($element->description, 150) }}</p>
+                            <p class="nwp-text-sm nwp-text-muted" style="margin-top:8px;">{{ Str::limit($element->description, 150) }}</p>
                         @endif
                         @if($element->rules_laws)
                             <div class="nwp-text-sm" style="margin-top:8px; padding-top:8px; border-top:1px solid var(--color-border-light);">

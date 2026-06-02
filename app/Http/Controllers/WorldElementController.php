@@ -40,6 +40,26 @@ class WorldElementController extends Controller
             'element' => $element,
         ], 201);
     }
+    public function show(Book $book, WorldElement $element)
+    {
+        abort_if($element->book_id !== $book->id, 404);
+        return view('world.show', compact('book', 'element'));
+    }
+
+    public function uploadImage(Request $request, Book $book, WorldElement $element): JsonResponse
+    {
+        $request->validate([
+            'image' => 'required|file|mimes:jpeg,png,webp|max:5120',
+        ]);
+
+        $path = $request->file('image')->store("world_elements/{$element->id}", 'public');
+        $element->update(['image_path' => $path]);
+
+        return response()->json([
+            'message' => 'Image uploaded.',
+            'path' => $path,
+        ]);
+    }
 
     public function update(Request $request, Book $book, WorldElement $element): JsonResponse
     {

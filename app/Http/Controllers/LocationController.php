@@ -56,6 +56,12 @@ class LocationController extends Controller
         ], 201);
     }
 
+    public function show(Book $book, Location $location)
+    {
+        abort_if($location->book_id !== $book->id, 404);
+        return view('locations.show', compact('book', 'location'));
+    }
+
     public function update(Request $request, Book $book, Location $location): JsonResponse
     {
         $validated = $request->validate([

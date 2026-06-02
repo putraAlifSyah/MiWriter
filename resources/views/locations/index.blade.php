@@ -73,13 +73,20 @@
 @else
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:12px;">
         @foreach($locations as $location)
-            <div class="nwp-card" id="location-{{ $location->id }}" style="padding:16px;">
-                <div style="display:flex; justify-content:space-between; align-items:start;">
-                    <div>
-                        <h3 style="font-weight:600; font-size:var(--font-size-base);">{{ $location->name }}</h3>
-                        <span class="nwp-badge nwp-badge--muted" style="margin-top:4px;">{{ $location->type->label() }}</span>
+            <div class="nwp-card" id="location-{{ $location->id }}" style="padding:16px; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s;" onclick="window.location.href='{{ route('locations.show', [$book, $location]) }}'" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                    <div style="display:flex; gap:12px; align-items:center;">
+                        @if($location->image_path)
+                            <img src="{{ Storage::url($location->image_path) }}" alt="{{ $location->name }}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; flex-shrink:0;">
+                        @else
+                            <div style="width:48px; height:48px; border-radius:8px; background:var(--color-bg-secondary); display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; border:1px solid var(--color-border-light);">🗺️</div>
+                        @endif
+                        <div>
+                            <h3 style="font-weight:600; font-size:var(--font-size-base); margin:0;">{{ $location->name }}</h3>
+                            <span class="nwp-badge nwp-badge--muted" style="margin-top:4px;">{{ $location->type->label() }}</span>
+                        </div>
                     </div>
-                    <button onclick="deleteLocation({{ $location->id }})" class="nwp-btn nwp-btn--ghost nwp-btn--sm" style="color:var(--color-danger); height:24px; min-height:24px; padding:0 8px;">Delete</button>
+                    <button onclick="event.stopPropagation(); deleteLocation({{ $location->id }})" class="nwp-btn nwp-btn--ghost nwp-btn--sm" style="color:var(--color-danger); height:24px; min-height:24px; padding:0 8px;">Delete</button>
                 </div>
                 @if($location->description)
                     <p class="nwp-text-sm nwp-text-muted" style="margin-top:8px;">{{ Str::limit($location->description, 100) }}</p>
